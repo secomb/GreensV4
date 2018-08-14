@@ -1,0 +1,18 @@
+VaryParams.dat - version for brain simulations
+Allowable parameters to vary: q0fac, diff[isp], tissparam[i][isp] - give actual values
+solutefac[isp], intravascfac[isp] - give multiplicative factors
+3	number of parameters to be varied: list below
+q0fac - param1
+solutefac[1] - param2
+tissparam[1][1] - param3
+5 number of runs
+run  param1 param2 param3
+1     1.0   1.0   0.002
+2     1.0   1.0   0.0025
+3     1.0   1.0   0.003
+4     1.0   1.0   0.0035
+5     1.0   1.0   0.004
+
+
+
+

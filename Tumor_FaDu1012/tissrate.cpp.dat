@@ -1,0 +1,55 @@
+	extern float **tissparam;
+	float pcr,m0,phi,kinstabA,kfA,krA,kAH,kinstabH,kfH,krH,kHP,kinstabM,kfM,krM,kMP,po2;//July 2011 Jan 2012 added nsp=7
+	
+//This version requires that nsp = 1, 3 or 5 or 7 19/1/2012
+	if(nsp != 1 && nsp != 3 && nsp != 5 && nsp != 7) printf("*** error: nsp = %i\n",nsp);
+//initialize
+	for(isp=1; isp<=nsp; isp++){
+		mtiss[isp] = 0.;
+		mptiss[isp] = 0.;
+	}
+//isp = 1: oxygen
+	m0 = tissparam[1][1];
+	pcr = tissparam[2][1];
+	po2 = FMAX(p[1],0.);		//get rid of negative values
+	mtiss[1] = -m0*po2/(po2 + pcr);
+	if(po2 > 0.) mptiss[1] = -m0*pcr/SQR(po2 + pcr);
+	if(nsp >= 3){
+//isp = 2: PR104A - free
+//isp = 3: PR104A - bound
+		phi = tissparam[3][2];
+		kfA = tissparam[1][2];	//note: dependence on oxygen p[1] can be introduced here
+		kinstabA = tissparam[2][2];
+		krA = tissparam[1][3];
+		kAH = tissparam[2][3]*(0.023+0.0977/(0.1+po2)); // oxygen dependence of intracellular metabolism
+		mtiss[2] = -(kfA*phi + kinstabA)*p[2] + phi*krA*p[3];
+		mptiss[2] = -(kfA*phi + kinstabA);
+		mtiss[3] = -(krA + kAH)*p[3] + kfA*p[2];
+		mptiss[3] = -(krA + kAH);
+	}
+	if(nsp >= 5){
+//isp = 4: PR104H - bound
+//isp = 5: PR104H - free
+		krH = tissparam[1][4];
+		kHP = tissparam[2][4]; //*(0.2+8/(10+po2));  //*(0.2+0.08/(0.1+po2)) oxygen dependence of h-> M could be added here
+		kfH = tissparam[1][5];
+		kinstabH = tissparam[2][5];
+		mtiss[4] = -(krH + kHP)*p[4] + kfH*p[5] + kAH*p[3];
+		mptiss[4] = -(krH + kHP);
+		mtiss[5] = -(kfH*phi + kinstabH)*p[5] + phi*krH*p[4];
+		mptiss[5] = -(kfH*phi + kinstabH);
+	}
+	if(nsp >= 7){
+//isp = 4: PR104M - bound ---added Jan 2012 KH
+//isp = 5: PR104M - free
+		krM = tissparam[1][6];
+		kMP = tissparam[2][6];
+		kfM = tissparam[1][7];
+		kinstabM = tissparam[2][7];
+		mtiss[6] = -(krM + kMP)*p[6] + kfM*p[7] + kHP*p[4];
+		mptiss[6] = -(krM + kMP);
+		mtiss[7] = -(kfM*phi + kinstabM)*p[7] + phi*krM*p[6];
+		mptiss[7] = -(kfM*phi + kinstabM);
+	}
+
+

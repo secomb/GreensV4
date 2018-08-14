@@ -1,0 +1,112 @@
+Solute parameters for tumor network fadu (TumorDuke) PR104A SiHa		
+1	2	3	rungreens (0 or *1), g0method (*1 or 2 for TPZ modelling), linmethod (1, 2 or *3)					
+2  2 100	nmaxvessel,nmaxtissue(5 for rat),nmax - iteration limits - nmaxtissue=1 improves convergence 							
+1.00E-04	errfac:  overall convergence tolerance (suggest 1e-5 to 1e-4)						
+50			lowflowcrit, criterion for low flow segment (suggest 50-200, 50 for Fadu, 200 for rat)						
+38			P50 in mmHg						
+3			n in Hill equation 						
+0.5			Oxygen binding capacity of red cells in cm^3/cm^3/mmHg						
+3.10E-05	Effective solubility of oxygen in blood in cm^3/cm^3/mmHg							
+1.333333	Factor to vary flows in network (normally use 1.0) - modified in GreensV4 (* Original Fadu=230.37, Rat=1.333)						
+7   3		number of reacting species (*7 for old PR104A model), number of tissue parameters per species						
+Solute 1 - oxygen									
+1	1   1	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen						
+100			pref[] - typical maximum value, 100 mmHg						
+4.20E-10	diff[] - tissue D*alpha in cm^3 O2/cm/s/mmHg							
+0.0005		tissparam[1][] - Max. oxygen cons. rate in cm3/cm3/s (0.000x - 0.00025 - 0.0004 -x)							
+1			tissparam[2][] - Michaelis constant of consumption in mmHg					
+0			tissparam[3][] - Extra, not used						
+5			g0[] - initial estimate of g0					
+1			g0fac[] - use 1.0						
+Solute 2 - PR104 free permeable diffusible solute with oxygen independent uptake/binding uptake 									
+1	1   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen						
+50			pref[] - typical maximum value, pM			
+4.0E-07	diff[] - tissue diffusivity in cm^2/s
+0.1			tissparam[1][] - kf0 (1/s) Forward exchange constant for cell uptake
+0.0			tissparam[2][] - kinstab0 (1/s)	Extracellular instability					
+0.517		tissparam[3][] - Phi Cell volume fraction
+50			g0[] - initial estimate of g0
+1			g0fac[] - use 1.0						
+Solute 3 - PR104 bound non-diffusible solute with oxygen dependent conversion to PR104H bound			
+0	0   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen
+300			pref[] - typical maximum value, pM
+0			diff[] - tissue diffusivity in cm^2/s
+0.1			tissparam[1][] - kr0 (1/s)	Reverse exchange constant for cell uptake
+0.0187		tissparam[2][] - k0A Degradation 104free->Afree (1/s) * note extracellular reaction for PR104 * 0.0187 is kmet for TPZ
+0			tissparam[3][] - Extra, not used USE THIS FOR CONVERSION PR104 --> PR104A
+50			g0[] - not used
+0			g0fac[] - not used
+Solute 4 - PR104A free permeable diffusible solute with oxygen independent uptake/binding uptake 									
+1	1   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen						
+50			pref[] - typical maximum value, pM	**was 0 for some reason					
+4.42E-07	diff[] - tissue diffusivity in cm^2/s  (5)
+0.0348		tissparam[1][] - kfA (1/s) (0.15) (Forward exchange constant for cell uptake)
+1.83E-05	tissparam[2][] - kinstabA (1/s)							
+0			tissparam[3][] - Extra, not used
+50			g0[] - initial estimate of g0, used for initial estimate of tissue consumption
+1			g0fac[] - use 1.0						
+Solute 5 - PR104A bound non-diffusible solute with oxygen dependent conversion to PR104H bound			
+0	0   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen
+300			pref[] - typical maximum value, pM
+0			diff[] - tissue diffusivity in cm^2/s
+0.0348		tissparam[1][] - krA (1/s)	0.05 (Reverse exchange constant for cell uptake)
+0.0159		tissparam[2][] - kAH Degradation Abound->Hbound (1/s)
+0			tissparam[3][] - Extra, not used
+0			g0[] - not used
+0			g0fac[] - not used
+Solute 6 - PR104H bound non-diffusible solute with oxygen dependent production from A		
+0	0   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen
+50			pref[] - typical maximum value, uM
+0			diff[] - tissue diffusivity in cm^2/s
+0.016		tissparam[1][] - krH (1/s)	-0.0055
+0.00517		tissparam[2][] - kHM Degradation of PR104Hb (1/s) (0.0187)
+0			tissparam[3][] - Extra, not used
+0			g0[] - not used
+0			g0fac[] - not used
+Solute 7 - PR104H free permeable diffusible solute
+1	1   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen
+20			pref[] - typical maximum value, pM
+6.24E-07	diff[] - tissue diffusivity in cm^2/s  (9e-7)
+0.016		tissparam[1][] - kFH binding/cell uptake of PR104Hf (1/s) (0.021)							
+9.33E-04	tissparam[2][] - kInstabH Degradation of PT104Hf (1/s)							
+0			tissparam[3][] - Extra, not used						
+50			g0[] - initial estimate of g0, used for initial estimate of tissue consumption						
+1			g0fac[] - use 1.0						
+Solute 8 - PR104M bound non-diffusible solute with oxygen (in)dependent production from H									
+0	0   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen						
+50			pref[] - typical maximum value, uM						
+0			diff[] - tissue diffusivity in cm^2/s  						
+0.016		tissparam[1][] - krM (1/s)					
+0.012		tissparam[2][] - kMP Degradation of PR104Hb (1/s)						
+0			tissparam[3][] - Extra, not used						
+0			g0[] - not used						
+0			g0fac[] - not used						
+Solute 9 - PR104M free permeable diffusible solute									
+1	1   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen						
+20			pref[] - typical maximum value, pM
+4.29E-07	diff[] - tissue diffusivity in cm^2/s  (9e-7)
+0.016		tissparam[1][] - kFM binding/cell uptake of PR104Mf (1/s) (0.021)
+0.00167		tissparam[2][] - kInstabM Degradation of PT104Mf (1/s)
+0			tissparam[3][] - Extra, not used
+50			g0[] - initial estimate of g0, used for initial estimate of tissue consumption
+1			g0fac[] - use 1.0
+Solute 10 - PR104Q bound non-diffusible solute with oxygen (in)dependent production from H
+0	0   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen
+50			pref[] - typical maximum value, uM
+0			diff[] - tissue diffusivity in cm^2/s
+0.016		tissparam[1][] - krM (1/s)	-0.0055
+0.012		tissparam[2][] - kMP Degradation of PR104Hb (1/s) (0.0187)				
+0			tissparam[3][] - Extra, not used						
+0			g0[] - not used
+0			g0fac[] - not used
+Solute 11 - PR104Q free permeable diffusible solute									
+1	1   0	permsolute, 0 or 1, diffsolute, 0 or 1; oxygen, 0 or 1, 1 if solute is oxygen						
+20			pref[] - typical maximum value, pM						
+4.29E-07	diff[] - tissue diffusivity in cm^2/s  (9e-7)							
+0.016		tissparam[1][] - kFM binding/cell uptake of PR104Mf (1/s) (0.021)							
+0.00167		tissparam[2][] - kInstabM Degradation of PT104Mf (1/s)							
+0			tissparam[3][] - Extra, not used						
+50			g0[] - initial estimate of g0, used for initial estimate of tissue consumption						
+1			g0fac[] - use 1.0	
+
+			

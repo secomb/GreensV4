@@ -1,0 +1,45 @@
+ 16 Solute 1 - Oxygen
+D (um)  K (mmHg.um.s/um3O2)
+    4           2.45
+    5           2.00
+    6           1.74
+    8           1.44
+   10           1.27
+   12           1.16
+   14           1.08
+   16           1.02
+   18           0.974
+   20           0.935
+   22           0.895
+   24           0.853
+   28           0.815
+   32           0.779
+   40           0.750
+   50           0.730
+ 1 Solute 2 - PR104 EC
+D (um)  	K (s/um)
+   10           0.1
+ 0 Solute 3 - PR104IC
+ 1 Solute 4 - PR104A EC
+D (um)  	K (s/um)
+   10           0.1
+ 0 Solute 5 - PR104A IC
+ 0 Solute 6 - PR104H IC
+ 1 Solute 7 - PR104H EC
+D (um)  	K (s/um)
+   10           0.1
+ 0 Solute 8 - PR104M IC
+ 1 Solute 9 - PR104M EC
+D (um)  	K (s/um)
+   10           0.1
+ 0 Solute 10 - PR104Q IC
+ 1 Solute 11 - PR104M EC
+D (um)  	K (s/um)
+   10           0.1
+
+Duke (Fadu) -same
+Tumor 1998 - same
+Cremaster - same
+PR104A model
+
+

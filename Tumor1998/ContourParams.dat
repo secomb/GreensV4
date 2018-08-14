@@ -1,0 +1,10 @@
+  0. 0. 115.	5	origin of plane slice for PO2 output, subdivision of segments for contours ***Tumor 1998 Rat
+  550. 0. 115. 30	corner of plane slice, number of points
+  0. 520. 115. 32	corner of plane slice, number of points
+  0. 2. 26  		Solute 1: minimum contour level, increment, number of levels
+  1. 2. 21		Solute 2: minimum contour level, increment, number of levels
+  0. 2. 21		Solute 3: minimum contour level, increment, number of levels
+  0. 0.5 20		Solute 4: minimum contour level, increment, number of levels
+  0. 0.1 20		Solute 5: minimum contour level, increment, number of levels
+  0. 2. 20		Solute 6: minimum contour level, increment, number of levels
+  0. 0.2 30		Solute 7: minimum contour level, increment, number of levels

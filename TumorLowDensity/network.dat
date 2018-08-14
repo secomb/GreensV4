@@ -1,0 +1,50 @@
+Low density rat network(1993)
+  1000.  1000.  200.	box dimensions in microns
+  20    20    4		number of tissue points in x,y,z directions
+  200.			outer bound distance (100. in test case)
+  10.				max. segment length.  (5. in test case)
+  8				nodsegm, max. allowed number of segments per node
+   15				total number of segments
+ name  type   from   to   diam. rel. flow  hem.			
+1	5	1	2	90	120.    0.40	
+2	5	2	3	90	120.    0.40	
+3	5	3	13	90	120.    0.40	
+4	5	4	5	74	120.    0.40	
+5	5	5	7	74	120.    0.40	
+6	5	6	7	90	120.    0.40	
+7	5	7	8	80	240.    0.40	
+8	5	8	9	96	240.    0.40	
+9	5	9	10	96	240.    0.40	
+10	5	10	11	96	240.    0.40	
+11	5	11	12	48	240.    0.40	
+12	5	12	13	48	240.    0.40	
+13	5	13	16	110	360.    0.40	
+14	5	14	15	48	120.    0.40	
+15	5	15	17	48	120.    0.40	
+ 17                    total number of nodes
+name  x     y     z
+1	1000	560	100
+2	840	680	100
+3	800	800	100
+4	1000	260	100
+5	900	280	100
+6	740	0	100
+7	660	180	100
+8	160	100	100
+9	60	360	100
+10	220	680	100
+11	420	720	100
+12	500	880	100
+13	600	920	100
+14	150	1000	100
+15	90	860	100
+16	560	1000	100
+17	0	800	100
+ 5	total number of boundary nodes
+node bctyp press/flow   HD    PO2    solute 3
+ 1      2     120.      0.4   10.	1. 
+ 4      2     120.      0.4   10.	1.
+ 6      2     120.      0.4   10.	1.
+ 14     2     120.      0.4   10.	1.                      
+ 16     0     15.       0.4   5.	1.
+ 17     0     15.       0.4   5.	1.

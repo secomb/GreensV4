@@ -1,0 +1,18 @@
+	float pcr,m0,po2;
+	
+//This version requires that nsp = 1
+	if(nsp != 1) printf("*** error: nsp = %i\n",nsp);
+//initialize
+	for(isp=1; isp<=nsp; isp++){
+		mtiss[isp] = 0.;
+		mptiss[isp] = 0.;
+	}
+//isp = 1: oxygen
+	m0 = tissparam[1][1];
+	pcr = tissparam[2][1];
+	po2 = FMAX(p[1],0.);		//get rid of negative values
+	mtiss[1] = -m0*po2/(po2 + pcr);
+	if(po2 > 0.) mptiss[1] = -m0*pcr/SQR(po2 + pcr);
+
+
+

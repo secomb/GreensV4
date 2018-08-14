@@ -1,0 +1,9 @@
+  0. 0. 75.	 5	origin of plane slice for PO2 output, subdivision of segments for contours
+  990. 0. 75. 51	corner of plane slice, number of points
+  0. 810. 75. 51	corner of plane slice, number of points
+  0. 2. 28  		Solute 1: minimum contour level, increment, number of levels
+  1. 2. 31		Solute 2: minimum contour level, increment, number of levels
+  0. 10. 30		Solute 3: minimum contour level, increment, number of levels
+
+
+
