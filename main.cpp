@@ -145,6 +145,11 @@ int main(int argc, char *argv[])
 			fprintf(ofp, " tissparam[%i][%i]", ivaryparams[j][2], ivaryparams[j][3]);
 			break;
 		}
+		case 6:
+		{
+			fprintf(ofp, "   p50     ");
+			break;
+		}
 		}
 	}
 	for (isp = 1; isp <= nsp; isp++) fprintf(ofp, "  pmean[%i]  ", isp);
@@ -184,6 +189,11 @@ int main(int argc, char *argv[])
 			{
 				isp = ivaryparams[j][3];
 				if (isp <= nsp) tissparam[ivaryparams[j][2]][isp] = paramvalue[imain][j];
+				break;
+			}
+			case 6:
+			{
+				p50 = paramvalue[imain][j];
 				break;
 			}
 			}

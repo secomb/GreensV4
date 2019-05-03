@@ -23,7 +23,7 @@ void analyzenet()
 	extern int **segnodname,**nodnod,**nodseg;
 	extern int ***nbou;
 	extern float pi1,maxl,lb,alx,aly,alz,totalq;
-	extern float *diam,*lseg,*rseg,*ds,*ss,*axt,*ayt,*azt,*hd,*q;
+	extern float *diam,*lseg,*rseg,*ds,*ss,*axt,*ayt,*azt,*hd,*q,*qdata;
 	extern float *bcprfl;
 	extern float **cnode,**start,**end,**scos;
 	extern float ***rsta,***rend;
@@ -70,13 +70,13 @@ void analyzenet()
 		printf("*** Error: No matching node found for nodname %i\n", bcnodname[inodbc]);
 		foundit:;
 	}
-//Calculate total inflow to network. TWS July 2018
+//Calculate total inflow to network based on reference flow values. TWS July 2018
 	totalq = 0.;
 	for (inodbc = 1; inodbc <= nnodbc; inodbc++) {
 		inod = bcnod[inodbc];	//boundary node
 		iseg = nodseg[1][inod];
-		if (q[iseg] > 0. && inod == ista[iseg]) totalq += q[iseg];
-		if (q[iseg] < 0. && inod == iend[iseg]) totalq -= q[iseg];
+		if (qdata[iseg] > 0. && inod == ista[iseg]) totalq += qdata[iseg];
+		if (qdata[iseg] < 0. && inod == iend[iseg]) totalq -= qdata[iseg];
 	}
 //start[k][iseg] = coordinates of starting point of segment i
 	for(iseg=1; iseg<=nseg; iseg++) if(segtyp[iseg] == 4 || segtyp[iseg] == 5){

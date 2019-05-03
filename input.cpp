@@ -157,6 +157,10 @@ void input(void)
 					ivaryparams[i][3] = bb[j + 13] - '0';
 					printf("Variable parameter %i: tissparams[%i][%i]\n", i, ivaryparams[i][2], ivaryparams[i][3]);
 				}
+				else if (match("p50", bb) >= 0) {
+					ivaryparams[i][1] = 6;
+					printf("Variable parameter %i: p50\n", i);
+				}
 			}
 			fscanf(ifp, "%i%*[^\n]", &nruns);
 			paramvalue = matrix(1, nruns, 1, nvaryparams);

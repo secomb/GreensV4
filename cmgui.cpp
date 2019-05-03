@@ -133,11 +133,11 @@ void cmgui(float *segvar)
 	char fname[80];
 	FILE *exelem, *exnode;
 
-	strcpy(fname, "Current\\greens");
+	strcpy(fname, "Current/greens");
 	strcat(fname, numstr);
 	strcat(fname, ".exelem");
 	exelem = fopen(fname, "w");
-	strcpy(fname, "Current\\greens");
+	strcpy(fname, "Current/greens");
 	strcat(fname, numstr);
 	strcat(fname, ".exnode");
 	exnode = fopen(fname, "w");

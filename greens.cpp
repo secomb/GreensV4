@@ -141,7 +141,7 @@ void greens(void)
 
 	float x11, x22, x33, duration, rsegmax, dsmax, gvarfac;
 	float gtt, gtv, gvt, disp2, ds2, dist, d, de2, dtave, den, dqsumdg0;
-	float dif, err, qhdcrit, pathlength;
+	float dif, err, qhdcrit, pathlength, tlengthdiam;
 	float lam, lam3d, lam2d;
 	char fname[80];
 
@@ -201,22 +201,27 @@ void greens(void)
 	tlength = 0.;
 	tlengthq = 0.;//added 8/09
 	tlengthqhd = 0.;//added 8/10
+	tlengthdiam = 0.;//added 12/18
 	for (iseg = 1; iseg <= nseg; iseg++) {
 		q[iseg] = qdata[iseg] * q0fac;//scaling by q0fac. November 2016
 		qq[iseg] = fabs(q[iseg]);
 		tlength += lseg[iseg];//moved to greens November 2016
 		tlengthq += lseg[iseg] * qq[iseg];//added 8/09
 		tlengthqhd += lseg[iseg] * qq[iseg] * hd[iseg];//added 8/10
+		tlengthdiam += lseg[iseg] * diam[iseg];//added 12/18
 	}
 	den = sqrt(vdom / tlength);
 	if (greensverbose) {
 		printf("Average distance from tissue node to the nearest vessel = %f\n", dtave);
+		printf("Vessel length) = %f\n", tlength);
 		printf("Sqrt(Tissue Volume/vessel length) = %f\n", den);
 		printf("Capillary density = %8.1f /mm2\n", tlength / vdom * 1.e6);
+		printf("Total inflow to network = %f nl/min (for flow values in network.dat)\n", totalq);	//October 2018
 		printf("Perfusion = %f cm3/cm3/min (uncorrected for path length effect)\n", totalq*q0fac / vdom * 1.e6);	//added q0fac November 2016
 		pathlength = 0.;
 		if (q0fac > 0.) for (iseg = 1; iseg <= nseg; iseg++) pathlength += fabs(q[iseg])*lseg[iseg] / totalq / q0fac;	//added q0fac November 2016
 		printf("Flow-weighted path length = %f micron\n", pathlength);
+		printf("Length-weighted mean diameter = %f micron\n", tlengthdiam/tlength);
 	}
 	//Calculate intravascular or wall transport resistance.  Zero unless specified in intravascfac.dat.
 	//If not oxygen, assume value from data is 1/(wall permeability in um/s)
