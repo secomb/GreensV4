@@ -297,7 +297,7 @@ void greens(void)
 	//	}
 
 	//create log file
-	ofp1 = fopen("Current\\GreensLog.txt", "w");
+	ofp1 = fopen("Current/GreensLog.txt", "w");
 	fprintf(ofp1, "GreensLog.txt\n");
 	fclose(ofp1);
 	tstart = clock();
@@ -608,7 +608,7 @@ void greens(void)
 			if (greensverbose) printf("*** Warning: solute %i, %i tissue source strengths not converged\n", isp, errtissuecount[isp]);
 	tissueconv:;
 		//Print log file.  April 2010
-		ofp1 = fopen("Current\\GreensLog.txt", "a");
+		ofp1 = fopen("Current/GreensLog.txt", "a");
 		kvessel = IMIN(kvessel, nmaxvessel);
 		ktissue = IMIN(ktissue, nmaxtissue);
 		fprintf(ofp1, "\n----- kmain = %i, kvessel = %i, ktissue = %i -----\n", kmain, kvessel, ktissue);
@@ -690,7 +690,7 @@ void greens(void)
 			if (err > 1.) convflag = 0;
 		}
 		//Print log file - April 2010
-		ofp1 = fopen("Current\\GreensLog.txt", "a");
+		ofp1 = fopen("Current/GreensLog.txt", "a");
 		for (isp = 1; isp <= nsp; isp++) {
 			if (permsolute[isp] == 1) fprintf(ofp1, "Solute %i: errvessel_p = %f, imaxerr = %i\n",
 				isp, errvessel[isp], segname[imaxerrvessel[isp]]);
@@ -709,7 +709,7 @@ mainconv:;
 	tfinish = clock();
 	duration = (float)(tfinish - tstart) / CLOCKS_PER_SEC;
 	printf("\n%i iterations, %2.1f seconds for main loop\n", kmain, duration);
-	ofp1 = fopen("Current\\GreensLog.txt", "a");
+	ofp1 = fopen("Current/GreensLog.txt", "a");
 	fprintf(ofp1, "\n%i iterations, %2.1f seconds for main loop\n", kmain, duration);
 	fclose(ofp1);
 	//Scale all qv values so that qvsum = qtsum.  April 2010.
@@ -718,7 +718,7 @@ mainconv:;
 		for (i = 1; i <= nnv; i++) qv[i][isp] *= qvfac[isp];
 	}
 	//general output file
-	strcpy(fname, "Current\\GreensRes");
+	strcpy(fname, "Current/GreensRes");
 	strcat(fname, numstr);
 	strcat(fname, ".out");
 	ofp = fopen(fname, "w");
@@ -761,7 +761,7 @@ mainconv:;
 	fclose(ofp);
 
 	//Vessel levels for all vessel points
-	strcpy(fname, "Current\\VesselLevels");
+	strcpy(fname, "Current/VesselLevels");
 	strcat(fname, numstr);
 	strcat(fname, ".out");
 	ofp = fopen(fname, "w");
@@ -791,7 +791,7 @@ mainconv:;
 	}
 	fclose(ofp);
 	//Vessel source strengths for all vessel points
-	strcpy(fname, "Current\\VesselSources");
+	strcpy(fname, "Current/VesselSources");
 	strcat(fname, numstr);
 	strcat(fname, ".out");
 	ofp = fopen(fname, "w");
@@ -805,7 +805,7 @@ mainconv:;
 	fclose(ofp);
 
 	//Tissue levels for all tissue points
-	strcpy(fname, "Current\\TissueLevels");
+	strcpy(fname, "Current/TissueLevels");
 	strcat(fname, numstr);
 	strcat(fname, ".out");
 	ofp = fopen(fname, "w");
@@ -835,7 +835,7 @@ mainconv:;
 	}
 	fclose(ofp);
 	//Tissue source strengths for all tissue points
-	strcpy(fname, "Current\\TissueSources");
+	strcpy(fname, "Current/TissueSources");
 	strcat(fname, numstr);
 	strcat(fname, ".out");
 	ofp = fopen(fname, "w");

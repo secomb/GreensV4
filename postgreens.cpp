@@ -24,7 +24,7 @@ void postgreens(void)
 
 	int	i, isp, itp;
 
-	strcpy(fname, "Current\\PostGreens");
+	strcpy(fname, "Current/PostGreens");
 	strcat(fname, numstr);
 	strcat(fname, ".out");
 	ofp = fopen(fname, "w");
