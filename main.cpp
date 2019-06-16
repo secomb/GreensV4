@@ -12,9 +12,16 @@ See greens.cpp for description of changes.
 #include <string.h>
 #include <math.h>
 #include "nrutil.h"
-#if defined(__linux__) 
-//linux goes here
-#elif defined(_WIN32)	//Windows version
+
+#if defined(__linux__)
+// Requires c++17 support, should be included in all current linux releases
+#include <experimental/filesystem> 
+namespace fs = std::experimental::filesystem::v1;
+#elif defined(__APPLE__)
+// Requires removal of the -lstdc++fs flag from makefile
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif defined(_WIN32)    //Windows version
 #include <Windows.h>
 #endif
 
@@ -64,8 +71,18 @@ int main(int argc, char *argv[])
 	char fname[80];
 	FILE *ofp;
 
-#if defined(__linux__) 
-	//linux code goes here
+	// Create current subdirectory if doesn't exist; copy .dat files there
+	// Updated May 2019 for cross-platform support
+#if defined(__unix__)
+	if (!fs::exists("Current")) fs::create_directory("Current");
+
+	fs::copy_file("ContourParams.dat", fs::path("Current/ContourParams.dat"), fs::copy_options::overwrite_existing);
+	fs::copy_file("SoluteParams.dat", fs::path("Current/SoluteParams.dat"), fs::copy_options::overwrite_existing);
+	fs::copy_file("Network.dat", fs::path("Current/Network.dat"), fs::copy_options::overwrite_existing);
+	fs::copy_file("IntravascRes.dat", fs::path("Current/IntravascRes.dat"), fs::copy_options::overwrite_existing);
+	if (fs::exists("Varyparams.dat"))
+		fs::copy_file("VaryParams.dat", fs::path("Current/VaryParams.dat"), fs::copy_options::overwrite_existing);
+	fs::copy_file("tissrate.cpp.dat", fs::path("Current/tissrate.cpp.dat"), fs::copy_options::overwrite_existing);
 #elif defined(_WIN32) 			//Windows version
 	bool NoOverwrite = false;
 	DWORD ftyp = GetFileAttributesA("Current\\");
