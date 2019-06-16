@@ -18,15 +18,12 @@ Version 3.0, May 17, 2011.  Plots in z-order, for better results with 3D network
 void picturenetwork(float *nodvar, float *segvar, const char fname[])
 {
 	extern int max, mxx, myy, mzz, nseg, nnod;
-	extern int *segtyp, *ista, *iend;
-	extern int ***nbou;//added April 2010
-	extern float *axt, *ayt;//added April 2010
-	extern float *diam, **cnode, *xsl0, *xsl1, *xsl2;;
+	extern int *segtyp, *ista, *iend, ***nbou;
+	extern float *axt, *ayt, *diam, **cnode, *xsl0, *xsl1, *xsl2;
+
 	int i, j, k, iseg, inod, showpoint, ilevel, nlevel = 100;
 	float xmin, xmax, ymin, ymax, xs, ys, picfac, red, green, blue, xz, xzmin, xzmax;
-	float diamfac = 1., zcoord, zbottom, ztop, zmin, zmax;
-	float **cos;
-
+	float diamfac = 1., zcoord, zbottom, ztop, zmin, zmax, **cos;
 	FILE *ofp;
 
 	xmin = 0.;
@@ -42,24 +39,22 @@ void picturenetwork(float *nodvar, float *segvar, const char fname[])
 	cos[3][1] = cos[1][2] * cos[2][3] - cos[1][3] * cos[2][2];
 	cos[3][2] = cos[1][3] * cos[2][1] - cos[1][1] * cos[2][3];
 	cos[3][3] = cos[1][1] * cos[2][2] - cos[1][2] * cos[2][1];
-	//Determine range of z values
 	zmin = 1.e6;
 	zmax = -1.e6;
-	for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5) {
+	for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5) {	//Determine range of z values
 		zcoord = 0.;
 		for (i = 1; i <= 3; i++)	zcoord += (cnode[i][ista[iseg]] + cnode[i][iend[iseg]]) / 2.*cos[3][i];
 		zmin = FMIN(zmin, zcoord - 1.);
 		zmax = FMAX(zmax, zcoord + 1.);
 	}
-
-	picfac = FMIN(500. / xmax, 700. / ymax);//updated April 2010
+	picfac = FMIN(500. / xmax, 700. / ymax);
 	ofp = fopen(fname, "w");
 	fprintf(ofp, "%%!PS-Adobe-2.0\n");
 	fprintf(ofp, "%%%%Pages: 1\n");
 	fprintf(ofp, "%%%%EndComments\n");
 	fprintf(ofp, "%%%%Page: 1 1\n");
 	fprintf(ofp, "/mx {%g mul 50 add} def\n", picfac);
-	fprintf(ofp, "/my {%g mul 50 add} def\n", picfac);//updated April 2010
+	fprintf(ofp, "/my {%g mul 50 add} def\n", picfac);
 	fprintf(ofp, "/cf {closepath fill} def\n");
 	fprintf(ofp, "/cs {closepath stroke} def\n");
 	fprintf(ofp, "/m {moveto} def\n");
@@ -85,13 +80,11 @@ void picturenetwork(float *nodvar, float *segvar, const char fname[])
 		showpoint = 0;
 		for (k = 1; k <= mzz; k++) if (nbou[i][j][k] > 0) showpoint = 1;
 		if (showpoint == 1) fprintf(ofp, "%g mx %g my m (.) show\n", axt[i], ayt[j]);
-		for (k = 1; k <= mzz; k++) if (nbou[i][j][k] == 1022) fprintf(ofp, "%g mx %g my m (X) show\n", axt[i], ayt[j]);
 	}
 	fprintf(ofp, "/Times-Roman findfont\n");
 	fprintf(ofp, "4 scalefont\n");
 	fprintf(ofp, "setfont\n");
-	//plot vessels according to segvar in order from bottom to top according to z-coordinate
-	xzmin = 1.e6;
+	xzmin = 1.e6;	//plot vessels according to segvar in order from bottom to top according to z-coordinate
 	xzmax = -1.e6;
 	for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5) {
 		xzmin = FMIN(xzmin, segvar[iseg]);
@@ -128,9 +121,8 @@ void picturenetwork(float *nodvar, float *segvar, const char fname[])
 			}
 		}
 	}
-
-	//label nodes in black
-	fprintf(ofp, "0 0 0 setrgbcolor\n");//black
+	
+	fprintf(ofp, "0 0 0 setrgbcolor\n");	//label nodes in black
 	for (inod = 1; inod <= nnod; inod++) {
 		xs = 0.;
 		ys = 0.;
@@ -142,8 +134,7 @@ void picturenetwork(float *nodvar, float *segvar, const char fname[])
 		fprintf(ofp, "%g mx %g my m ", xs + 0.5 / picfac, ys);
 		fprintf(ofp, "(%g) show\n", nodvar[inod]);
 	}
-	//label segments in blue
-	fprintf(ofp, "0 0 1 setrgbcolor\n");//blue
+	fprintf(ofp, "0 0 1 setrgbcolor\n");	//label segments in blue
 	for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5) {
 		xs = 0.;
 		ys = 0.;
@@ -155,8 +146,8 @@ void picturenetwork(float *nodvar, float *segvar, const char fname[])
 		fprintf(ofp, "%g mx %g my m ", xs + 0.5*picfac, ys);
 		fprintf(ofp, "(%g) show\n", segvar[iseg]);
 	}
-	//create a color bar
-	float c;
+
+	float c;		//create a color bar
 	float cbbox = 15.; //size of boxes
 	float cbx = 560; //origin of color bar
 	float cby = 100;//origin of color bar

@@ -19,8 +19,7 @@ void putrank(void)
 
 	int inod, j, jseg, nod1, nod2, iseg, flag;
 
-	//construct node table; count outputs from node; output nodes precede input nodes
-	for (inod = 1; inod <= nnod; inod++) {
+	for (inod = 1; inod <= nnod; inod++) {	//construct node table; count outputs from node; output nodes precede input nodes
 		nodtyp[inod] = 0;
 		nodout[inod] = 0;
 	}
@@ -53,9 +52,9 @@ void putrank(void)
 		nodseg[nodtyp[nod2]][nod2] = iseg;
 		nodnod[nodtyp[nod2]][nod2] = nod1;
 	}
-	for (inod = 1; inod <= nnod; inod++)	if (nodtyp[inod] == 0) printf("***Warning: Node %i is not related to any segment\n", inod);
-	//assign low ranks to inflow nodes
-	nnodfl = 0;
+	for (inod = 1; inod <= nnod; inod++) if (nodtyp[inod] == 0) printf("***Warning: Node %i is not related to any segment\n", inod);
+
+	nnodfl = 0;		//assign low ranks to inflow nodes
 	for (inod = 1; inod <= nnod; inod++) {
 		nk[inod] = 0;
 		if (nodtyp[inod] == 1 && nodout[inod] == 1) {
@@ -64,8 +63,8 @@ void putrank(void)
 			nodrank[nnodfl] = inod;
 		}
 	}
-	//assign increasing ranks to downstream connected nodes
-	flag = 1;
+
+	flag = 1;	//assign increasing ranks to downstream connected nodes
 	while (flag == 1) {
 		flag = 0;
 		for (inod = 1; inod <= nnod; inod++)	if (nk[inod] == 0 && nodtyp[inod] > 0) {

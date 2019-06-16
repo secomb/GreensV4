@@ -21,17 +21,16 @@ float bloodconc(float p, float h);
 void blood(float c, float h, float *p, float *pp)
 {
 	extern float fn, alphab, p50, cs, cext, hext;
-	extern float plow, phigh, clowfac, chighfac, pphighfac;//added January 2012
+	extern float plow, phigh, clowfac, chighfac, pphighfac;
 	float pl, ph;
 	float clow, chigh, pphigh;
 
-	if (h < 1.e-6) {	//changed from 1.e-3, January 2012
+	if (h < 1.e-6) {
 		*p = c / alphab;
 		*pp = alphab;
 		return;
 	}
-	//changed for better behavior in severe hypoxia. 2 Oct 08
-	if (c < 0.) {
+	if (c < 0.) {	//changed for better behavior in severe hypoxia
 		*p = c / alphab;
 		*pp = alphab;
 		return;
@@ -46,17 +45,16 @@ void blood(float c, float h, float *p, float *pp)
 	if (c < chigh) {
 		if (c / h / cs < 1.) {
 			ph = pow((c / h / cs) / (1.0 - c / h / cs), 1. / fn)*p50;
-			pl = 0.;	//0. here to be sure to bracket the root.  June 2009
+			pl = 0.;	//0. here to be sure to bracket the root
 		}
 		else {
 			ph = phigh;
-			pl = plow;//changed August 2010
+			pl = plow;
 		}
 		hext = h;
 		cext = c;
-		*p = rtflsp(func, pl, ph, 0.001f);//lower tolerance, August 2010
-//if false position algorithm fails, use bisection!  June 2009.
-		if (*p < 0.) *p = rtbis(func, pl, ph, 0.001f);
+		*p = rtflsp(func, pl, ph, 0.001f);
+		if (*p < 0.) *p = rtbis(func, pl, ph, 0.001f);	//if false position algorithm fails, use bisection!  June 2009.
 		*pp = cs * h*fn / p50 * pow(*p / p50, (fn - 1)) / SQR(1. + pow(*p / p50, fn)) + alphab;
 		return;
 	}
@@ -65,9 +63,9 @@ void blood(float c, float h, float *p, float *pp)
 	*pp = pphigh;
 	return;
 }
+
 //Using the false position method, find the root of a function func known to lie between x1 and x2.
 //The root, returned as rtflsp, is refined until its accuracy is +- xacc.
-
 float rtflsp(float(*func)(float), float x1, float x2, float xacc)
 {
 	int j;
@@ -111,6 +109,7 @@ float rtflsp(float(*func)(float), float x1, float x2, float xacc)
 	return -1.0;
 }
 
+//bisection method, if false position method fails
 float rtbis(float(*func)(float), float x1, float x2, float xacc)
 {
 	int j;
@@ -151,6 +150,7 @@ float bloodconc(float p, float h)
 	else cv = (chighfac + (p - phigh)*pphighfac)*h + alphab * p;
 	return cv;
 }
+
 float bloodconcp(float p, float h)
 {
 	extern float fn, p50, alphab, cs;

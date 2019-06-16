@@ -2,7 +2,6 @@
 Tissue uptake rates of solutes as a function of levels
 Must be provided for each application.  TWS November 07.
 Version 1.0, May 1, 2008.
-With 9/08 updates
 Version 2.0, May 1, 2010.
 Version 3.0, May 17, 2011.
 ***  Must rebuild project after switching tissrate.cpp.dat files ***

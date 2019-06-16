@@ -10,21 +10,17 @@ Version 4.0, March 1, 2018.
 
 float *eval(int slsegdiv, float req, float *x)
 {
-	extern int mxx, myy, mzz, nnt, nnv, nseg, nnod, nsp;
+	extern int mxx, myy, mzz, nnt, nnv, nseg, nnod, nsp, is2d;
 	extern int *mainseg, **tisspoints, *permsolute, *diffsolute, ***nbou;
-	extern int is2d; //needed for 2d version
-	extern float fac;
+	extern float fac, w2d, r2d;
 	extern float *axt, *ayt, *azt, *ds, *diff, *g0, *y, *p;
 	extern float **qt, **start, **scos, **qv, **ax, **pt;
-	extern float w2d, r2d; //needed for 2d version
 
 	float dist2, gtt, gtv, lamx, lamy, lamz, r2d2 = SQR(r2d), req2 = SQR(req);
 	int i, j, k, ii, jj, kk, iseg, itp, isp;
 
-	//initialize to g0
-	for (isp = 1; isp <= nsp; isp++) p[isp] = g0[isp];
-	//add contributions from tissue sources
-	for (itp = 1; itp <= nnt; itp++) {
+	for (isp = 1; isp <= nsp; isp++) p[isp] = g0[isp];	//initialize to g0
+	for (itp = 1; itp <= nnt; itp++) {	//add contributions from tissue sources
 		dist2 = SQR(x[1] - axt[tisspoints[1][itp]])
 			+ SQR(x[2] - ayt[tisspoints[2][itp]])
 			+ SQR(x[3] - azt[tisspoints[3][itp]]);
@@ -38,10 +34,9 @@ float *eval(int slsegdiv, float req, float *x)
 		}
 		for (isp = 1; isp <= nsp; isp++)	if (diffsolute[isp]) p[isp] += gtt / diff[isp] * qt[itp][isp];
 	}
-	//add contributions from vessel sources.  Subdivide subsegments.
-	//Note that vessel point is at midpoint of subsegment
-	for (i = 1; i <= nnv; i++) {
-		iseg = mainseg[i];
+	
+	for (i = 1; i <= nnv; i++) {	//add contributions from vessel sources.  Subdivide subsegments.
+		iseg = mainseg[i];			//Note that vessel point is at midpoint of subsegment
 		for (k = 1; k <= slsegdiv; k++) {
 			for (j = 1; j <= 3; j++)	y[j] = ax[j][i] + scos[j][iseg] * ds[iseg] * (-0.5 + (k - 0.5) / slsegdiv);
 			dist2 = SQR(x[1] - y[1]) + SQR(x[2] - y[2]) + SQR(x[3] - y[3]);

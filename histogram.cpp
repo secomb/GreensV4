@@ -13,12 +13,13 @@ Version 3.0, May 17,2011.
 void histogram(const char fname[])
 {
 	extern int mxx, myy, mzz, nnt, nnv, nseg, nnod, nsp;
-	extern float *pmin, *pmax, *pmean, *pref;
-	extern float **pt;
+	extern float *pmin, *pmax, *pmeant, *pref, **pt;
+
 	int i, j, itp, isp, nctop, ncbot, nstat, nstatm = 101;
 	float step, dev;
 	float *po2samp, *stat, *cumu, *mstat;
 	FILE *ofp;
+
 	po2samp = vector(1, nstatm);
 	stat = vector(1, nstatm);
 	cumu = vector(1, nstatm);
@@ -39,7 +40,7 @@ void histogram(const char fname[])
 			mstat[i] = 0;
 		}
 		for (itp = 1; itp <= nnt; itp++) {
-			dev = dev + SQR(pmean[isp] - pt[itp][isp]);
+			dev += SQR(pmeant[isp] - pt[itp][isp]);
 			for (j = 1; j <= nstat; j++)	if (pt[itp][isp] <= po2samp[j]) {
 				mstat[j] = mstat[j] + 1;
 				goto binned;
@@ -54,7 +55,7 @@ void histogram(const char fname[])
 		fprintf(ofp, "Histogram data for solute %i\n", isp);
 		fprintf(ofp, "value  %% cumul. %%\n");
 		for (i = 1; i <= nstat; i++) fprintf(ofp, "%g %7.2f %7.2f\n", po2samp[i], stat[i], cumu[i]);
-		fprintf(ofp, "Mean = %f deviation = %f min = %f max  = %f\n", pmean[isp], dev, pmin[isp], pmax[isp]);
+		fprintf(ofp, "Mean = %f deviation = %f min = %f max  = %f\n", pmeant[isp], dev, pmin[isp], pmax[isp]);
 	}
 	fclose(ofp);
 	free_vector(po2samp, 1, nstatm);

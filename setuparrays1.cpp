@@ -24,7 +24,7 @@ void setuparrays1(int nseg, int nnod)
 	nspoint = ivector(1, nseg);
 	istart = ivector(1, nseg);
 	lowflow = ivector(1, nseg);
-	nk = ivector(1, nnod); //not nseg - error fixed 20 April 2010
+	nk = ivector(1, nnod);
 	ista = ivector(1, nseg);
 	iend = ivector(1, nseg);
 	nodrank = ivector(1, nnod);
@@ -35,7 +35,7 @@ void setuparrays1(int nseg, int nnod)
 	nodseg = imatrix(1, nodsegm, 1, nnod);
 
 	segvar = vector(1, nseg);
-	q = vector(1, nseg);//added Novamber 2016
+	q = vector(1, nseg);
 	qq = vector(1, nseg);
 	oxflux = vector(1, nodsegm);
 	rseg = vector(1, nseg);

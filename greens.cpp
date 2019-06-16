@@ -98,65 +98,51 @@ double bicgstab(double **a, double *b, double *x, int n, double eps, int itmax);
 
 void greens(void)
 {
-	extern int nmaxvessel, nmaxtissue, nmax, g0method, linmethod, kmain;
+	extern int nmaxvessel, nmaxtissue, nmax, g0method, linmethod, kmain, imain;
 	extern int mxx, myy, mzz, nnt, nnv, nseg, nsp, nnodbc;
 	extern int is2d; //needed for 2d version
 	extern int *mainseg, **tisspoints, *permsolute, *segtyp;
-	extern int *segname, *nspoint, *istart, *nodout, *bcnod, *lowflow;
+	extern int *segname, *nspoint, *istart, *bcnod, *lowflow;
 	extern int *errvesselcount, *errtissuecount;
-	extern int *imaxerrvessel, *imaxerrtissue, *nresis;
-	extern int *oxygen, *diffsolute;
-	extern int **nodseg;
-	extern int ***nbou;
-	extern int *indx;
+	extern int *imaxerrvessel, *imaxerrtissue, *nresis, *indx;
+	extern int *oxygen, *diffsolute, **nodseg, ***nbou;
 
-	extern float *dtmin;//added July 2011
-	extern float p50, cs, req, totalq, q0fac, fac, flowfac, lowflowcrit, errfac/*,pcr,m0*/;
-	extern float v, vol, vdom, tlength, pi1;
+	extern float p50, cs, req, totalq, q0fac, fac, flowfac, lowflowcrit, errfac, v, vol, vdom, tlength, pi1;
 	extern float tlengthq, tlengthqhd;
 	extern float alx, aly, alz, w2d, r2d; //needed for 2d version
-	extern float *axt, *ayt, *azt, *ds, *diff, *pmin, *pmax, *pmean, *g0, *g0fac, *g0facnew, *pref;
-	extern float *diam, *rseg, *qdata, *q, *qq, *hd, *bchd, *qvtemp, *qvfac;	//added qdata November 2016
+	extern float *axt, *ayt, *azt, *ds, *diff, *pmin, *pmax, *pmeant, *pmeanv, *psdt, *psdv, *g0, *g0fac, *g0facnew, *pref, *dtmin;
+	extern float *diam,*rseg,*qdata,*q,*qq,*hd,*bchd,*qvtemp,*qvfac;
 	extern float *x, *lseg, *mtiss, *mptiss, *dqvsumdg0, *dqtsumdg0;
 	extern float *epsvessel, *epstissue, *eps, *errvessel, *errtissue, *p;
 	extern float *rhs, *rhstest, *g0old, *ptt, *ptpt, *qtsum, *qvsum, *intravascfac;
-	extern float **qtp;
-	extern double *rhstiss, *matxtiss;
-
-	extern float **tissparam;
-	extern float **start, **scos, **ax, **bcp;
+	extern float **tissparam, **start,**scos,**ax,**bcp;
 	extern float **qv, **qt, **pv, **pev, **pt, **resisdiam, **resis;
-	extern float **qvseg, **pvseg, **pevseg;
-	extern float **pvt, **pvprev, **qvprev, **cv, **dcdp;
-	extern float **ptprev, **ptv, **gamma1, **cv0, **conv0;
-	extern float **gvv, **end, **al;
+	extern float **qvseg,**pvseg,**pevseg, **pvt,**pvprev,**qvprev,**cv,**dcdp;
+	extern float **ptprev,**ptv,**gamma1,**cv0,**conv0, **gvv,**end,**al;
 	extern double **mat, **rhsg, *rhsl, *matx;
 	extern float ***dtt;
 
-	extern char numstr[6];
 
 	int i, j, k, ix, iy, iz, jx, jy, jz, iseg, nt, ineg, ihigh, isp, imaxerr;
 	int ixdiff, iydiff, izdiff, isn, jseg, ktissue, kvessel, itp, jtp, convflag, convflagt, convflagv;
 	int greensverbose = 1;
+	int bicgstabit = 2000; //parameter for biconjugate gradient method
+	double dd,bicgstaberr = 0.0001; //parameter for biconjugate gradient method
 
 	float x11, x22, x33, duration, rsegmax, dsmax, gvarfac;
 	float gtt, gtv, gvt, disp2, ds2, dist, d, de2, dtave, den, dqsumdg0;
 	float dif, err, qhdcrit, pathlength, tlengthdiam;
 	float lam, lam3d, lam2d;
 	char fname[80];
+	FILE *ofp,*ofp1;
+	clock_t tstart, tfinish, tstart1, tfinish1;
 
 	w2d = alz;  //needed for 2d
 	r2d = sqrt(SQR(alx) + SQR(aly) + SQR(alz));
 	lam3d = 0.2;//	lam3d = 0.2;	//Underrelax iteration of tissue levels
-	lam2d = 0.1;	//Use this one for 2D permeable solutes only.  May 2010
+	lam2d = 0.1;	//Use this one for 2D permeable solutes only
 	if (is2d) lam = lam2d;
 	else lam = lam3d;
-	int bicgstabit = 2000; //parameter for biconjugate gradient method.  March 2010
-	double dd, bicgstaberr = 0.0001; //parameter for biconjugate gradient method.  March 2010
-
-	FILE *ofp, *ofp1;
-
-	clock_t tstart, tfinish, tstart1, tfinish1;
 
 	//setup mainseg (must be done after setuparrays2)
 	for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5)
@@ -199,16 +185,16 @@ void greens(void)
 	dtave = dtave / nnt;
 	vdom = nnt * vol;
 	tlength = 0.;
-	tlengthq = 0.;//added 8/09
-	tlengthqhd = 0.;//added 8/10
-	tlengthdiam = 0.;//added 12/18
-	for (iseg = 1; iseg <= nseg; iseg++) {
-		q[iseg] = qdata[iseg] * q0fac;//scaling by q0fac. November 2016
+	tlengthq = 0.;
+	tlengthqhd = 0.;
+	tlengthdiam = 0.;
+	for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5) {
+		q[iseg] = qdata[iseg] * q0fac;		//scaling by q0fac
 		qq[iseg] = fabs(q[iseg]);
-		tlength += lseg[iseg];//moved to greens November 2016
-		tlengthq += lseg[iseg] * qq[iseg];//added 8/09
-		tlengthqhd += lseg[iseg] * qq[iseg] * hd[iseg];//added 8/10
-		tlengthdiam += lseg[iseg] * diam[iseg];//added 12/18
+		tlength += lseg[iseg];
+		tlengthq += lseg[iseg] * qq[iseg];
+		tlengthqhd += lseg[iseg] * qq[iseg] * hd[iseg];
+		tlengthdiam += lseg[iseg] * diam[iseg];
 	}
 	den = sqrt(vdom / tlength);
 	if (greensverbose) {
@@ -216,17 +202,18 @@ void greens(void)
 		printf("Vessel length) = %f\n", tlength);
 		printf("Sqrt(Tissue Volume/vessel length) = %f\n", den);
 		printf("Capillary density = %8.1f /mm2\n", tlength / vdom * 1.e6);
-		printf("Total inflow to network = %f nl/min (for flow values in network.dat)\n", totalq);	//October 2018
-		printf("Perfusion = %f cm3/cm3/min (uncorrected for path length effect)\n", totalq*q0fac / vdom * 1.e6);	//added q0fac November 2016
+		printf("Total inflow to network = %f nl/min (for flow values in network.dat)\n", totalq);
+		printf("Perfusion = %f cm3/cm3/min (uncorrected for path length effect)\n", totalq*q0fac / vdom * 1.e6);
 		pathlength = 0.;
-		if (q0fac > 0.) for (iseg = 1; iseg <= nseg; iseg++) pathlength += fabs(q[iseg])*lseg[iseg] / totalq / q0fac;	//added q0fac November 2016
+		if (q0fac > 0.) for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5)
+			pathlength += fabs(q[iseg])*lseg[iseg] / totalq / q0fac;
 		printf("Flow-weighted path length = %f micron\n", pathlength);
 		printf("Length-weighted mean diameter = %f micron\n", tlengthdiam/tlength);
 	}
 	//Calculate intravascular or wall transport resistance.  Zero unless specified in intravascfac.dat.
 	//If not oxygen, assume value from data is 1/(wall permeability in um/s)
 	for (isp = 1; isp <= nsp; isp++) {
-		for (iseg = 1; iseg <= nseg; iseg++) {
+		for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5) {
 			gamma1[iseg][isp] = 0.;
 			if (nresis[isp] != 0) {
 				gamma1[iseg][isp] = resis[1][isp];
@@ -234,7 +221,7 @@ void greens(void)
 					gamma1[iseg][isp] = resis[j - 1][isp] + (resis[j][isp] - resis[j - 1][isp])
 					*(diam[iseg] - resisdiam[j - 1][isp]) / (resisdiam[j][isp] - resisdiam[j - 1][isp]);
 				if (diam[iseg] > resisdiam[nresis[isp]][isp]) gamma1[iseg][isp] = resis[nresis[isp]][isp];
-				if (oxygen[isp] != 1) gamma1[iseg][isp] = gamma1[iseg][isp] / pi1 / diam[iseg];	//was /2./pi1/diam[isp]; fixed July 2013
+				if (oxygen[isp] != 1) gamma1[iseg][isp] = gamma1[iseg][isp] / pi1 / diam[iseg];	
 				gamma1[iseg][isp] = gamma1[iseg][isp] * intravascfac[isp];		//scaling from VaryParams.dat
 			}
 		}
@@ -242,7 +229,7 @@ void greens(void)
 	//vessel ~ vessel matrix elements gvv
 	//Uses empirical fit to results from elliptical integral form for diagonal elements, updated 2009
 	//if center of one segment lies within the other segment, calculate Gvv as for self-interaction term
-	//based on larger radius and larger length. (Jan. 08)
+	//based on larger radius and larger length
 	for (i = 1; i <= nnv; i++) {
 		iseg = mainseg[i];
 		for (j = 1; j <= nnv; j++) {
@@ -254,7 +241,7 @@ void greens(void)
 				rsegmax = FMAX(rseg[iseg], rseg[jseg]);
 				//Version 2.0 of 3-D interaction coefficients for close or coincident segments.  See Sep. 2009 notes.
 				gvarfac = 0.6*exp(-0.45*dsmax / rsegmax);
-				//for distinct vessels close together, make distance rsegmax in following calculation, to improve convergence. TWS2011
+				//for distinct vessels close together, make distance rsegmax in following calculation, to improve convergence
 				if (iseg != jseg) dist = rsegmax;
 				gvv[i][j] = (1.298 / (1. + 0.297*powf(dsmax / rsegmax, 0.838)) - gvarfac * SQR(dist / rsegmax))*fac / rsegmax;
 				//for 2D version, additional terms give effect of boundaries (reflection method)
@@ -282,12 +269,12 @@ void greens(void)
 		}
 		else dtt[jx][jy][jz] = gtt;
 	}
-	//detect and label vessels with very low q*hd - updated April 2010 - test if oxygen is one of the solutes
+	//detect and label vessels with very low q*hd - test if oxygen is one of the solutes
 	qhdcrit = 0.;
 	for (isp = 1; isp <= nsp; isp++) if (oxygen[isp] == 1) qhdcrit = lowflowcrit * tissparam[1][isp];
-	for (iseg = 1; iseg <= nseg; iseg++) {
+	for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5) {
 		lowflow[iseg] = 0;
-		if (qq[iseg] * (hd[iseg] + 0.01) < qhdcrit) lowflow[iseg] = 1;//Added 0.01 September 2011 to allow for high flow, zero hematocrit channels
+		if (qq[iseg] * (hd[iseg] + 0.01) < qhdcrit) lowflow[iseg] = 1;//Added 0.01 to allow for high flow, zero hematocrit channels
 	}
 	initgreens();
 	putrank();
@@ -330,7 +317,7 @@ void greens(void)
 					if (is2d) gvt = fac * 2. / w2d * log(r2d / dist);
 					else gvt = fac / dist;
 				}
-				for (isp = 1; isp <= nsp; isp++) if (permsolute[isp] == 1) pvt[i][isp] += gvt / diff[isp] * qt[itp][isp];//May 2010 permsolute
+				for (isp = 1; isp <= nsp; isp++) if (permsolute[isp] == 1) pvt[i][isp] += gvt / diff[isp] * qt[itp][isp];//permsolute
 			}
 		}
 		//compute blood solute levels and PO2
@@ -367,8 +354,7 @@ void greens(void)
 						}
 					}
 					if (ineg > 0 || ihigh > 0) if (greensverbose) printf("\n");
-					//generate linear system to be solved
-					for (i = 1; i <= nnv; i++) {
+					for (i = 1; i <= nnv; i++) {	//generate linear system to be solved
 						iseg = mainseg[i];
 						rhs[i] = pv[i][isp] - pvt[i][isp];
 						for (j = 1; j <= nnv; j++) {
@@ -471,21 +457,21 @@ void greens(void)
 						}
 					}
 					//for low q*hd segments, calculate efflux based on change in extravascular oxygen level
-					//save values in qvtemp to avoid influence on eval, update qv, underrelax - July 2008
+					//save values in qvtemp to avoid influence on eval, update qv, underrelax
 					for (i = 1; i <= nnv; i++) {
 						iseg = mainseg[i];
 						if (oxygen[isp] == 1 && lowflow[iseg] == 1) {
 							for (j = 1; j <= 3; j++) x[j] = ax[j][i] - 0.5*scos[j][iseg] * ds[iseg];
 							p = eval(1, req, x);
 							p[isp] = FMAX(p[isp], 0.);
-							pv[i][isp] = p[isp] / 2.;   //added August 2009
-							qvtemp[i] = q[iseg] * flowfac*bloodconc(p[isp], hd[iseg]); //q here (not qq) April 2008
+							pv[i][isp] = p[isp] / 2.;
+							qvtemp[i] = q[iseg]*flowfac*bloodconc(p[isp],hd[iseg]);
 							for (j = 1; j <= 3; j++) x[j] = ax[j][i] + 0.5*scos[j][iseg] * ds[iseg];
 							p = eval(1, req, x);
 							p[isp] = FMAX(p[isp], 0.);
-							pv[i][isp] += p[isp] / 2.;  //added August 2009
+							pv[i][isp] += p[isp] / 2.;
 							qvtemp[i] -= q[iseg] * flowfac*bloodconc(p[isp], hd[iseg]);
-							cv[i][isp] = bloodconc(pv[i][isp], hd[iseg]);	//added October 2012
+							cv[i][isp] = bloodconc(pv[i][isp], hd[iseg]);
 						}
 					}
 					for (i = 1; i <= nnv; i++) if (oxygen[isp] == 1 && lowflow[mainseg[i]] == 1)
@@ -497,7 +483,7 @@ void greens(void)
 						dif = qv[i][isp] - qvprev[i][isp];
 						//If qv is large, use relative rather than absolute error 
 						if (qv[i][isp] != 0.) dif = dif * FMIN(1., epsvessel[isp] / errfac / fabs(qv[i][isp]));
-						if (fabs(dif) >= errvessel[isp]) {	//>= added Dec. 2011
+						if (fabs(dif) >= errvessel[isp]) {
 							imaxerrvessel[isp] = mainseg[i];
 							errvessel[isp] = fabs(dif);
 						}
@@ -519,7 +505,6 @@ void greens(void)
 		//********************** start of tissue loop *****************************
 		//Compute tissue source strengths iteratively by successive relaxation: updated qt values are immediately used.
 		//Continually scales up qv values so that their sum equals updated sum of qt values.
-		//contribution ptv from vessel source strengths qv
 		for (itp = 1; itp <= nnt; itp++) {
 			for (isp = 1; isp <= nsp; isp++) ptv[itp][isp] = 0.;
 			for (i = 1; i <= nnv; i++) {
@@ -537,24 +522,20 @@ void greens(void)
 			}
 		}
 		for (isp = 1; isp <= nsp; isp++) qvfac[isp] = 1.;
-		for (ktissue = 1; ktissue <= nmaxtissue; ktissue++) {
-			//Scale all av, qvsum and ptv values so that qvsum = qtsum.
-
+		for (ktissue = 1; ktissue <= nmaxtissue; ktissue++) {	//Scale all av, qvsum and ptv values so that qvsum = qtsum
 			for (isp = 1; isp <= nsp; isp++) if (permsolute[isp] == 1 && g0method == 1) {
 				qvfac[isp] = -qtsum[isp] / qvsum[isp];
 				if (fabs(qvfac[isp]) > 2.) qvfac[isp] = 1.;  //avoid extreme values
 				if (fabs(qvfac[isp]) < 0.5) qvfac[isp] = 1.;  //avoid extreme values
 			}
-
 			convflagt = 1;
 			for (isp = 1; isp <= nsp; isp++) {
 				qtsum[isp] = 0;
 				errtissue[isp] = 0.;
 				dqtsumdg0[isp] = 0.;
-				errtissuecount[isp] = 0; //added June 2009
+				errtissuecount[isp] = 0;
 			}
 			//----------------------------------------------------
-
 			for (itp = 1; itp <= nnt; itp++) {	//contribution ptt from tissue source strengths qt
 				ix = tisspoints[1][itp];
 				iy = tisspoints[2][itp];
@@ -571,19 +552,17 @@ void greens(void)
 				}
 				for (isp = 1; isp <= nsp; isp++) ptpt[isp] = pt[itp][isp];
 				for (isp = 1; isp <= nsp; isp++) {
-					if (diffsolute[isp]) {		//diffusible solutes
-						pt[itp][isp] = (1. - lam)*pt[itp][isp]
-							+ lam * (ptv[itp][isp] * qvfac[isp] + g0[isp] + ptt[isp] / diff[isp]);//underrelaxation 
-					}
+						if(diffsolute[isp])		//diffusible solutes, underrelax 
+							pt[itp][isp] = (1.-lam)*pt[itp][isp] + lam*(ptv[itp][isp]*qvfac[isp] + g0[isp] + ptt[isp]/diff[isp]);
 					else {	//non-diffusible - use Newton method to solve for pt.
-						tissrate(nsp, ptpt, mtiss, mptiss);	//update tissrates - April 2015
+							tissrate(nsp,ptpt,mtiss,mptiss);	//update tissrates
 						if (mptiss[isp] == 0.) printf("*** Error: mptiss[%i] = 0 at tissue point %i\n", isp, itp);
 						else pt[itp][isp] -= mtiss[isp] / mptiss[isp];
 					}
 					ptpt[isp] = pt[itp][isp];
 				}
 				tissrate(nsp, ptpt, mtiss, mptiss);	//update tissrates
-				for (isp = 1; isp <= nsp; isp++) {  //replace qt with value based on updated pt - all solutes
+					for(isp=1; isp<=nsp; isp++){		//replace qt with value based on updated pt
 					dif = mtiss[isp] * vol - qt[itp][isp];
 					qt[itp][isp] = mtiss[isp] * vol;
 					qtsum[isp] += qt[itp][isp];
@@ -595,9 +574,8 @@ void greens(void)
 					if (fabs(dif) > epstissue[isp]) errtissuecount[isp]++;
 				}
 			}
-
 			for (isp = 1; isp <= nsp; isp++) {
-				if (greensverbose) printf("Solute %i: qtsum = %f, qvsum = %f\n", isp, qtsum[isp], qvsum[isp] * qvfac[isp]);//May 2010
+				if(greensverbose) printf("Solute %i: qtsum = %f, qvsum = %f\n",isp,qtsum[isp],qvsum[isp]*qvfac[isp]);
 				if (greensverbose) printf("Solute %i: ktissue = %i, errtissue_q = %f, imaxerr = %i, g0 = %f\n",
 					isp, ktissue, errtissue[isp], imaxerrtissue[isp], g0[isp]);
 				if (errtissuecount[isp] > 0) convflagt = 0;
@@ -607,8 +585,8 @@ void greens(void)
 		for (isp = 1; isp <= nsp; isp++) if (errtissuecount[isp] > 0)
 			if (greensverbose) printf("*** Warning: solute %i, %i tissue source strengths not converged\n", isp, errtissuecount[isp]);
 	tissueconv:;
-		//Print log file.  April 2010
-		ofp1 = fopen("Current/GreensLog.txt", "a");
+
+		ofp1 = fopen("Current/GreensLog.txt", "a");		//Print log file
 		kvessel = IMIN(kvessel, nmaxvessel);
 		ktissue = IMIN(ktissue, nmaxtissue);
 		fprintf(ofp1, "\n----- kmain = %i, kvessel = %i, ktissue = %i -----\n", kmain, kvessel, ktissue);
@@ -623,7 +601,7 @@ void greens(void)
 		fclose(ofp1);
 		//********************** end of tissue loop *****************************
 		//Update g0.  If permsolute[isp] != 1, always use method 2.
-		//Method 2 is based on derivative wrt g0 - new version September 2009 - automatic estimation of g0fac
+		//Method 2 is based on derivative wrt g0, automatic estimation of g0fac
 		for (isp = 1; isp <= nsp; isp++) g0facnew[isp] = 0.;
 		for (itp = 1; itp <= nnt; itp++) {
 			for (isp = 1; isp <= nsp; isp++) ptpt[isp] = pt[itp][isp];
@@ -649,8 +627,7 @@ void greens(void)
 				g0[isp] -= dif;
 			}
 		}
-		//Convergence based on changes in pv, pt and g0.  Express relative to eps[isp].
-		convflag = 1;
+		convflag = 1;		//Convergence based on changes in pv, pt and g0.  Express relative to eps[isp].
 		if (greensverbose) printf("\n");
 		for (isp = 1; isp <= nsp; isp++) {
 			err = 0.;
@@ -689,13 +666,11 @@ void greens(void)
 			if (greensverbose && imaxerr > 0) if (lowflow[imaxerr]) printf("Solute %i: max error is at a low-flow segment\n", isp);
 			if (err > 1.) convflag = 0;
 		}
-		//Print log file - April 2010
-		ofp1 = fopen("Current/GreensLog.txt", "a");
+		ofp1 = fopen("Current/GreensLog.txt", "a");		//Print log file
 		for (isp = 1; isp <= nsp; isp++) {
 			if (permsolute[isp] == 1) fprintf(ofp1, "Solute %i: errvessel_p = %f, imaxerr = %i\n",
 				isp, errvessel[isp], segname[imaxerrvessel[isp]]);
-			fprintf(ofp1, "Solute %i: errtissue_p = %f, imaxerr = %i\n",
-				isp, errtissue[isp], imaxerrtissue[isp]);
+			fprintf(ofp1, "Solute %i: errtissue_p = %f, imaxerr = %i\n", isp, errtissue[isp], imaxerrtissue[isp]);
 		}
 		fclose(ofp1);
 		tfinish1 = clock();
@@ -712,22 +687,19 @@ mainconv:;
 	ofp1 = fopen("Current/GreensLog.txt", "a");
 	fprintf(ofp1, "\n%i iterations, %2.1f seconds for main loop\n", kmain, duration);
 	fclose(ofp1);
-	//Scale all qv values so that qvsum = qtsum.  April 2010.
+
 	for (isp = 1; isp <= nsp; isp++) if (permsolute[isp] == 1 && g0method == 1) {
-		qvsum[isp] *= qvfac[isp];
+		qvsum[isp] *= qvfac[isp];		//Scale all qv values so that qvsum = qtsum
 		for (i = 1; i <= nnv; i++) qv[i][isp] *= qvfac[isp];
 	}
-	//general output file
-	strcpy(fname, "Current/GreensRes");
-	strcat(fname, numstr);
-	strcat(fname, ".out");
+
+	sprintf(fname, "Current/GreensRes%03i.out", imain);		//general output file
 	ofp = fopen(fname, "w");
 	fprintf(ofp, "%i %i %i %i %i %i\n", nnv, nseg, mxx, myy, mzz, nnt);
 	fprintf(ofp, "Scaling factor for flows q0fac = %f\n", q0fac);
 	for (isp = 1; isp <= nsp; isp++) fprintf(ofp, "g0[%i] = %f\n", isp, g0[isp]);
 	fprintf(ofp, "\n");
-	//extravascular solute levels
-	for (isp = 1; isp <= nsp; isp++) if (diffsolute[isp] == 1) {
+	for (isp = 1; isp <= nsp; isp++) if (diffsolute[isp] == 1) {	//extravascular solute levels
 		fprintf(ofp, "\nSolute %i\n", isp);
 		fprintf(ofp, "Segment");
 		if (permsolute[isp] == 1) fprintf(ofp, "Efflux Pvessel Ptissue Cvessel");
@@ -760,26 +732,28 @@ mainconv:;
 	}
 	fclose(ofp);
 
-	//Vessel levels for all vessel points
-	strcpy(fname, "Current/VesselLevels");
-	strcat(fname, numstr);
-	strcat(fname, ".out");
+	sprintf(fname, "Current/VesselLevels%03i.out", imain);	//Vessel levels for all vessel points
 	ofp = fopen(fname, "w");
 	fprintf(ofp, "Vessel levels\n");
 	for (isp = 1; isp <= nsp; isp++) if (permsolute[isp]) {
 		pmax[isp] = -1.e8;
-		pmean[isp] = 0.;
+		pmeanv[isp] = 0.;
+		psdv[isp] = 0.;
 		pmin[isp] = 1.e8;
 		for (i = 1; i <= nnv; i++) {
-			pmean[isp] += pv[i][isp];
+			pmeanv[isp] += pv[i][isp];
+			psdv[isp] += SQR(pv[i][isp]);
 			pmax[isp] = FMAX(pv[i][isp], pmax[isp]);
 			pmin[isp] = FMIN(pv[i][isp], pmin[isp]);
 		}
-		pmean[isp] = pmean[isp] / nnv;
+		pmeanv[isp] = pmeanv[isp]/nnv;
+		psdv[isp] = sqrt(psdv[isp]/nnv - SQR(pmeanv[isp]));
 		fprintf(ofp, "   Solute %i  ", isp);
 	}
-	fprintf(ofp, "\npmean\n");
-	for (isp = 1; isp <= nsp; isp++) if (permsolute[isp])	fprintf(ofp, "%12f ", pmean[isp]);
+	fprintf(ofp,"\npmeanv\n");
+	for(isp=1; isp<=nsp; isp++) if(permsolute[isp])	fprintf(ofp,"%12f ", pmeanv[isp]);
+	fprintf(ofp,"\npsdv\n");
+	for(isp=1; isp<=nsp; isp++) if(permsolute[isp])	fprintf(ofp,"%12f ", psdv[isp]);
 	fprintf(ofp, "\npmin\n");
 	for (isp = 1; isp <= nsp; isp++) if (permsolute[isp]) fprintf(ofp, "%12f ", pmin[isp]);
 	fprintf(ofp, "\npmax\n");
@@ -790,10 +764,8 @@ mainconv:;
 		fprintf(ofp, "\n");
 	}
 	fclose(ofp);
-	//Vessel source strengths for all vessel points
-	strcpy(fname, "Current/VesselSources");
-	strcat(fname, numstr);
-	strcat(fname, ".out");
+
+	sprintf(fname, "Current/VesselSources%03i.out", imain);	//Vessel source strengths for all vessel points
 	ofp = fopen(fname, "w");
 	fprintf(ofp, "Vessel sources\n");
 	for (isp = 1; isp <= nsp; isp++) if (permsolute[isp]) fprintf(ofp, "   Solute %i  ", isp);
@@ -804,26 +776,28 @@ mainconv:;
 	}
 	fclose(ofp);
 
-	//Tissue levels for all tissue points
-	strcpy(fname, "Current/TissueLevels");
-	strcat(fname, numstr);
-	strcat(fname, ".out");
+	sprintf(fname, "Current/TissueLevels%03i.out", imain);		//Tissue levels for all tissue points
 	ofp = fopen(fname, "w");
 	fprintf(ofp, "Tissue levels\n");
 	for (isp = 1; isp <= nsp; isp++) {
 		pmax[isp] = -1.e8;
-		pmean[isp] = 0.;
+		pmeant[isp] = 0.;
+		psdt[isp] = 0.;
 		pmin[isp] = 1.e8;
 		for (itp = 1; itp <= nnt; itp++) {
-			pmean[isp] += pt[itp][isp];
+			pmeant[isp] += pt[itp][isp];
+			psdt[isp] += SQR(pt[itp][isp]);
 			pmax[isp] = FMAX(pt[itp][isp], pmax[isp]);
 			pmin[isp] = FMIN(pt[itp][isp], pmin[isp]);
 		}
-		pmean[isp] = pmean[isp] / nnt;
+		pmeant[isp] = pmeant[isp]/nnt;
+		psdt[isp] = sqrt(psdt[isp]/nnt - SQR(pmeant[isp]));
 		fprintf(ofp, "   Solute %i  ", isp);
 	}
-	fprintf(ofp, "\npmean\n");
-	for (isp = 1; isp <= nsp; isp++)	fprintf(ofp, "%12f ", pmean[isp]);
+	fprintf(ofp,"\npmeant\n");
+	for(isp=1; isp<=nsp; isp++)	fprintf(ofp,"%12f ", pmeant[isp]);
+	fprintf(ofp,"\npsdt\n");
+	for(isp=1; isp<=nsp; isp++)	fprintf(ofp,"%12f ", psdt[isp]);
 	fprintf(ofp, "\npmin\n");
 	for (isp = 1; isp <= nsp; isp++)	fprintf(ofp, "%12f ", pmin[isp]);
 	fprintf(ofp, "\npmax\n");
@@ -834,10 +808,8 @@ mainconv:;
 		fprintf(ofp, "\n");
 	}
 	fclose(ofp);
-	//Tissue source strengths for all tissue points
-	strcpy(fname, "Current/TissueSources");
-	strcat(fname, numstr);
-	strcat(fname, ".out");
+
+	sprintf(fname, "Current/TissueSources%03i.out", imain);		//Tissue source strengths for all tissue points
 	ofp = fopen(fname, "w");
 	fprintf(ofp, "Tissue sources\n");
 	for (isp = 1; isp <= nsp; isp++) fprintf(ofp, "   Solute %i  ", isp);

@@ -8,8 +8,10 @@ unknown length.  From Tuhin Roy, Nov. 08.
 Version 2.0, May 1, 2010.
 Version 3.0, May 17, 2011.
 Version 4.0, March 1, 2018.
-In soluteparams.dat, total inflow is replaced by flow factor
-Includes capability to vary up to 3 parameters
+In soluteparams.dat, total inflow is replaced by flow factor in GreensV4
+Includes capability to vary up to 3 parameters. Allowable parameters to vary:
+1: q0fac, 2: solutefac[isp], 3: diff[isp], 4: intravascfac[isp], 5: tissparam[i][isp], 6: p50
+Values stored in ivaryparams[i][1], with i and or isp stored in ivaryparams[i][2 or 3]
 *******************************************************/
 #define _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_WARNINGS
@@ -19,10 +21,9 @@ Includes capability to vary up to 3 parameters
 #include <string.h>
 #include <math.h>
 #include "nrutil.h"
-
 #include <string>
-//string matching function, this includes wild card '?'
-int match(std::string const &pat, std::string const &target) {
+
+int match(std::string const &pat, std::string const &target) {	//string matching function, this includes wild card '?'
 	int pos, start, max;
 	if (pat.size() > target.size()) return -1;
 	max = target.size() - pat.size() + 1;
@@ -37,20 +38,17 @@ void input(void)
 {
 	extern int max, nmaxvessel, nmaxtissue, nmax, nsl1, nsl2, slsegdiv;
 	extern int mxx, myy, mzz, nnt, nnv, nseg, nnod, nsp, nnodbc, nodsegm;
-	extern int rungreens, g0method, linmethod;
-	extern int is2d; //needed for 2d version
-	extern int nvaryparams, nruns, ntissparams, npostgreensparams, npostgreensout;	//needed for varying parameters, postgreens
+	extern int rungreens, g0method, linmethod, is2d;
+	extern int nvaryparams, nruns, ntissparams, npostgreensparams, npostgreensout;
 	extern int **tisspoints, *permsolute, *bcnodname, *bcnod, *bctyp, **ivaryparams;
-	extern int *segname, *segtyp, *nodname, *nspoint, *nl;
-	extern int *oxygen, *diffsolute, *nresis; //added April 2010
+	extern int *segname, *segtyp, *nodname, *nspoint, *nl, *oxygen, *diffsolute, *nresis;
 	extern int **segnodname, **nodseg;
 
-	extern float fn, alphab, p50, cs, q0fac, errfac, lowflowcrit/*,pcr,m0,gf0,gf1*/;
-	extern float plow, phigh, clowfac, chighfac, pphighfac;//added January 2012
-	extern float lb, maxl, v, vol, req, pi1, alx, aly, alz;
-	extern float xmax, ymax, scalefac;
+	extern float fn, alphab, p50, cs, q0fac, errfac, lowflowcrit;
+	extern float plow, phigh, clowfac, chighfac, pphighfac;
+	extern float lb, maxl, v, vol, req, pi1, alx, aly, alz, xmax, ymax, scalefac;
 	extern float *axt, *ayt, *azt, *ds, *g0, *diff, *pmin, *pmax, *pmean, *pref, *g0fac;
-	extern float *diam, *qdata, *hd, *bcprfl, *bchd;	//added qdata Novamber 2016
+	extern float *diam, *qdata, *hd, *bcprfl, *bchd;
 	extern float *x, *xsl0, *xsl1, *xsl2, *clmin, *clint, *p, *cl, **zv, ***psl;
 	extern float **start, **scos, **ax, **cnode, **bcp, **resisdiam, **resis, **tissparam;
 	extern float **paramvalue, *solutefac, *intravascfac, *postgreensparams, *postgreensout;
@@ -72,7 +70,7 @@ void input(void)
 	fscanf(ifp, "%f%*[^\n]", &fn);
 	fscanf(ifp, "%f%*[^\n]", &cs);
 	fscanf(ifp, "%f%*[^\n]", &alphab);
-	fscanf(ifp, "%f%*[^\n]", &q0fac);	//modified 2012
+	fscanf(ifp, "%f%*[^\n]", &q0fac);
 	fscanf(ifp, "%i %i%*[^\n]", &nsp, &ntissparams);
 	permsolute = ivector(1, nsp);
 	diffsolute = ivector(1, nsp);
@@ -99,8 +97,8 @@ void input(void)
 		fscanf(ifp, "%f%*[^\n]", &g0fac[isp]);
 	}
 	fclose(ifp);
-	//parameters for blood.  TWS January 2012
-	plow = 0.1*p50;
+
+	plow = 0.1*p50;		//parameters for function "blood"
 	phigh = 5.*p50;
 	clowfac = cs * (1.0 - 1.0 / (1.0 + pow((plow / p50), fn)));
 	chighfac = cs * (1.0 - 1.0 / (1.0 + pow((phigh / p50), fn)));
@@ -122,9 +120,6 @@ void input(void)
 		if (nvaryparams) {
 			ivaryparams = imatrix(1, nvaryparams, 1, 3);
 			fgets(bb, max, ifp);
-			//Up to 3 parameters can be varied. Allowable parameters to vary:
-			//1: q0fac, 2: solutefac[isp], 3: diff[isp], 4: intravascfac[isp], 5: tissparam[i][isp]
-			//values stored in ivaryparams[i][1], with i and or isp stored in ivaryparams[i][2 or 3]
 			for (i = 1; i <= nvaryparams; i++) {
 				for (j = 1; j <= 3; j++) ivaryparams[i][j] = 0;
 				fgets(bb, max, ifp);
@@ -175,10 +170,9 @@ void input(void)
 		fclose(ifp);
 	}
 
-	//intravascular oxygen resistance data.  Assume zero unless specified in data file.
-	resisdiam = matrix(1, 20, 1, nsp); //added April 2010
-	resis = matrix(1, 20, 1, nsp); //added April 2010
-	nresis = ivector(1, nsp);  //added April 2010
+	resisdiam = matrix(1, 20, 1, nsp);		//intravascular oxygen resistance data.  Assume zero unless specified in data file.
+	resis = matrix(1, 20, 1, nsp);
+	nresis = ivector(1, nsp);
 	ifp = fopen("IntravascRes.dat", "r");
 	for (isp = 1; isp <= nsp; isp++) {
 		fscanf(ifp, "%i", &nresis[isp]);
@@ -191,39 +185,32 @@ void input(void)
 	}
 	fclose(ifp);
 
-	//network data file
-	ifp = fopen("Network.dat", "r");
+	ifp = fopen("Network.dat", "r");		//network data file
 	fgets(bb, max, ifp);
 	printf("%s\n", bb);
-	//dimensions of box in microns; vertex must be at origin
-	fscanf(ifp, "%f %f %f%*[^\n]", &alx, &aly, &alz);
+	fscanf(ifp, "%f %f %f%*[^\n]", &alx, &aly, &alz);		//dimensions of box in microns; vertex must be at origin
 	fscanf(ifp, "%i %i %i%*[^\n]", &mxx, &myy, &mzz);
 	fscanf(ifp, "%f%*[^\n]", &lb);
 	fscanf(ifp, "%f%*[^\n]", &maxl);
 	fscanf(ifp, "%i%*[^\n]", &nodsegm);
-	//number of segments in vessel network
-	fscanf(ifp, "%i%*[^\n]", &nseg);
+	fscanf(ifp, "%i%*[^\n]", &nseg);		//number of segments in vessel network
 	fgets(bb, max, ifp);
 	fgets(bb, max, ifp);
-	//segment properties: name type nodefrom nodeto diameter flow hematocrit
 	segname = ivector(1, nseg);
 	segtyp = ivector(1, nseg);
 	segnodname = imatrix(1, 2, 1, nseg);
 	diam = vector(1, nseg);
-	qdata = vector(1, nseg);	//November 2016
+	qdata = vector(1, nseg);
 	hd = vector(1, nseg);
 	for (iseg = 1; iseg <= nseg; iseg++) fscanf(ifp, "%i %i %i %i %f %f %f%*[^\n]",
 		&segname[iseg], &segtyp[iseg], &segnodname[1][iseg], &segnodname[2][iseg], &diam[iseg], &qdata[iseg], &hd[iseg]);
-	//number of nodes in vessel network
-	fscanf(ifp, "%i%*[^\n]", &nnod);
+	fscanf(ifp, "%i%*[^\n]", &nnod);		//number of nodes in vessel network
 	fgets(bb, max, ifp);
 	fgets(bb, max, ifp);
-	//coordinates of nodes
 	nodname = ivector(1, nnod);
-	cnode = matrix(1, 3, 1, nnod);
+	cnode = matrix(1, 3, 1, nnod);			//coordinates of nodes
 	for (i = 1; i <= nnod; i++) fscanf(ifp, "%i %f %f %f%*[^\n]", &nodname[i], &cnode[1][i], &cnode[2][i], &cnode[3][i]);
-	//boundary nodes
-	fscanf(ifp, "%i%*[^\n]", &nnodbc);
+	fscanf(ifp, "%i%*[^\n]", &nnodbc);		//boundary nodes
 	fgets(bb, max, ifp);
 	fgets(bb, max, ifp);
 	bcnodname = ivector(1, nnodbc);
@@ -233,25 +220,23 @@ void input(void)
 	bchd = vector(1, nnodbc);
 	bcp = matrix(1, nnodbc, 1, nsp);
 	for (i = 1; i <= nnodbc; i++) {
-		fscanf(ifp, "%i %i %f %f%", &bcnodname[i], &bctyp[i], &bcprfl[i], &bchd[i]);
+		fscanf(ifp, "%i %i %f %f", &bcnodname[i], &bctyp[i], &bcprfl[i], &bchd[i]);
 		for (isp = 1; isp <= nsp; isp++) if (permsolute[isp] == 1) fscanf(ifp, "%f", &bcp[i][isp]);
-		fscanf(ifp, "%*[^\n]");	//ignore any 'extra' solutes in data file
+		fscanf(ifp, "%*[^\n]");				//ignore any 'extra' solutes in data file
 	}
 	fclose(ifp);
-	//v = total box volume, vol = volume represented by each tissue point; req = radius of equivalent sphere
-	v = alx * aly*alz;
-	vol = v / (mxx*myy*mzz);
+ 
+	v = alx * aly*alz;						//v = total box volume,
+	vol = v / (mxx*myy*mzz);				//vol = volume represented by each tissue point; 
 	if (mzz == 1) req = pow(vol*1. / alz / pi1, 0.5);//2d version
-	else req = pow(vol*0.75 / pi1, 0.333333);
-	//Read parameters for slice on which P is computed for contour plot
+	else req = pow(vol*0.75 / pi1, 0.333333);	//req = radius of equivalent sphere
 	nl = ivector(1, nsp);
 	xsl0 = vector(1, 3);
 	xsl1 = vector(1, 3);
 	xsl2 = vector(1, 3);
 	clmin = vector(1, nsp);
 	clint = vector(1, nsp);
-
-	ifp = fopen("ContourParams.dat", "r");
+	ifp = fopen("ContourParams.dat", "r");	//Read parameters for slice on which P is computed for contour plot
 	fscanf(ifp, "%f %f %f %i%*[^\n]", &xsl0[1], &xsl0[2], &xsl0[3], &slsegdiv);
 	fscanf(ifp, "%f %f %f %i%*[^\n]", &xsl1[1], &xsl1[2], &xsl1[3], &nsl1);
 	fscanf(ifp, "%f %f %f %i%*[^\n]", &xsl2[1], &xsl2[2], &xsl2[3], &nsl2);
@@ -263,14 +248,13 @@ void input(void)
 	fclose(ifp);
 	xmax = sqrt(SQR(xsl1[1] - xsl0[1]) + SQR(xsl1[2] - xsl0[2]) + SQR(xsl1[3] - xsl0[3]));
 	ymax = sqrt(SQR(xsl2[1] - xsl0[1]) + SQR(xsl2[2] - xsl0[2]) + SQR(xsl2[3] - xsl0[3]));
-	scalefac = FMIN(500. / xmax, 700. / ymax);//updated April 2010
+	scalefac = FMIN(500. / xmax, 700. / ymax);
 	cl = vector(1, nlmax);
 	zv = matrix(1, nsl1, 1, nsl2);
 	psl = f3tensor(1, nsl1, 1, nsl2, 1, nsp);
 
-	//Read parameters to run postgreens
 	npostgreensparams = 0;
-	if (ifp = fopen("PostGreensParams.dat", "r")) {
+	if (ifp = fopen("PostGreensParams.dat", "r")) {		//Read parameters to run postgreens
 		fgets(bb, max, ifp);
 		fscanf(ifp, "%i%*[^\n]", &npostgreensout);
 		fscanf(ifp, "%i%*[^\n]", &npostgreensparams);

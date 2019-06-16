@@ -22,9 +22,8 @@ void convect(int isp)
 	extern int nnodbc, nseg, nnodfl, nodsegm, nsp, nnv, nsegfl;
 	extern int *bcnod, *nodtyp, *nodrank, *nodout, *segtyp, *permsolute, *oxygen, *nspoint, *istart;
 	extern int *segname, *nodname, **nodseg, *mainseg;
-	extern float *bifpar, *hd, *qq, *q, *bchd, *diam, **pv, **bcp, *ds, *segc, **cv, **qv, flowfac;
+	extern float *bifpar, *hd, *qq, *q, *bchd, *diam, **pv, **bcp, *ds, *segc, **cv, **qv, flowfac, *solutefac;
 	extern float **al;
-	extern float *solutefac;	//April 2015
 
 	int i, j, k, ii, jj, inod, iseg, jseg, in, isegk, nodt, nin, nout, ineg, ihigh;
 	float fluxsumin, pb, pp;
@@ -36,14 +35,14 @@ void convect(int isp)
 
 	isegk = 0;	//number of segments processed
 	for (i = 1; i <= nnv; i++) for (j = 1; j <= nnv; j++) al[i][j] = 0.;
-	for (iseg = 1; iseg <= nseg; iseg++) segc[iseg] = 0.;	//added June 2013
-//set convective fluxes in segments connected to inflow boundary nodes
-//segc is the convective flux of solute 
+	for (iseg = 1; iseg <= nseg; iseg++) segc[iseg] = 0.;
+
+	//set convective fluxes in segments connected to inflow boundary nodes, segc is the convective flux
 	for (j = 1; j <= nnodbc; j++) {
 		inod = bcnod[j];
 		if (nodout[inod] == 1) {
 			iseg = nodseg[1][inod];
-			//values modified according to VaryParams.dat, April 2015
+			//values modified according to VaryParams.dat
 			if (oxygen[isp] == 1) segc[iseg] = bloodconc(bcp[j][isp] * solutefac[isp], hd[iseg])*qq[iseg] * flowfac;
 			else segc[iseg] = bcp[j][isp] * solutefac[isp] * qq[iseg] * flowfac;
 			isegkk[iseg] = 1;
@@ -51,12 +50,13 @@ void convect(int isp)
 	}
 	ineg = 0;
 	ihigh = 0;
-	for (in = 1; in <= nnodfl; in++) {	//scan nodes in downstream order
+
+	for (in = 1; in <= nnodfl; in++) {	//scan all nodes in downstream order
 		inod = nodrank[in];
 		nodt = nodtyp[inod];
 		nout = nodout[inod];
 		nin = nodt - nout;
-		if (nodt > 1) {	//don't do for network boundary nodes
+		if (nodt > 1) {	//don't do this part for network boundary nodes
 			sumin = 0.;
 			hdsumin = 0.;
 			fluxsumin = 0.;
@@ -98,7 +98,7 @@ void convect(int isp)
 				printf("*** Error: Hematocrit conservation violation at node %i\n", nodname[inod]);
 		}
 		//subsegments of outflow segments - convective fluxes and alpha matrix, including network boundary nodes
-		for (ii = 1; ii <= nout; ii++) {		//outflows
+		for (ii = 1; ii <= nout; ii++) {				//outflows
 			iseg = nodseg[ii][inod];
 			for (jj = 0; jj < nspoint[iseg]; jj++) {	//convective fluxes
 				if (q[iseg] >= 0.) i = istart[iseg] + jj;

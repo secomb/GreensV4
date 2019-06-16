@@ -10,8 +10,6 @@ excluded.  This is repeated for multiple plane orientations, determined by am.
 method = 2: finds all tissue points within a distance lb of the vessels, but
 does not make a convex region.  Fills in 'holes' in interior, whether 2D or 3D.
 ----------------------------------------------------
-method = 3: as in method 1, but remove a strip at top and bottom of rectangular domain
-----------------------------------------------------
 method = 5: retinal angiogenesis model. As in method 2, but exclude regions r < IR and r > OR
 ----------------------------------------------------
 Output:	nnt, total tissue node points inside the region.
@@ -34,9 +32,9 @@ int outboun(int method)
 	int ii, jj, kk, imin, imax, jmin, jmax, kmin, kmax;
 	float aa, bb, cc, abc, ddmin, ddmax, dd, t;
 	float ds2, de2, disp2, d, x11, x22, x33;
-	float OR = 1000., IR = 200.;
+	float OR = 1000., IR = 200.;	//used for method 5 (annular region)
 
-	if (method == 1 || method == 3) {
+	if (method == 1) {
 		for (i = 1; i <= mxx; i++) for (j = 1; j <= myy; j++) for (k = 1; k <= mzz; k++) nbou[i][j][k] = 1;
 		am = 6;
 		for (a = 0; a <= am; a++) for (b = -am; b <= am; b++) for (c = -am; c <= am; c++) {
@@ -109,11 +107,6 @@ int outboun(int method)
 			}
 		}
 
-	}
-	//For 2D AV parallel vessels, set up exclusion of tisspoints 100 microns from the open "ends" as a boundary to stabiize the networks
-	if (method == 3) {
-		for (i = 1; i <= mxx; i++) for (j = 1; j <= myy; j++) for (k = 1; k <= mzz; k++) if (ayt[j] >= (aly - 250.0)) nbou[i][j][k] = 0;
-		for (i = 1; i <= mxx; i++) for (j = 1; j <= myy; j++) for (k = 1; k <= mzz; k++) if (ayt[j] <= 250.0) nbou[i][j][k] = 0;
 	}
 	nnt = 0;
 	for (i = 1; i <= mxx; i++) for (j = 1; j <= myy; j++) for (k = 1; k <= mzz; k++) if (nbou[i][j][k] == 1) {

@@ -18,21 +18,17 @@ void initgreens()
 {
 	extern int nnt, nnv, nsp;
 	extern int *lowflow, *mainseg, *permsolute;
-	extern int *oxygen, *diffsolute; //added April 2010
-
-	extern float vol, errfac, tlength;
-	extern float tlengthq, tlengthqhd;//added 8/09
-
+	extern int *oxygen, *diffsolute;
+	extern float vol, errfac, tlength, tlengthq, tlengthqhd;
 	extern float *mtiss, *mptiss, *epsvessel, *epstissue, *eps, *errvessel, *errtissue, *pinit, *p;
 	extern float *g0, *qtsum, *pref, *ds, *qq, *hd;
-	extern float **qt, **qv, **pt, **pv, **tissparam, *mptissref;
+	extern float **qt, **qv, **pt, **pv, **tissparam;
 
 	int isp, i, itp;
 
 	for (isp = 1; isp <= nsp; isp++)	pinit[isp] = g0[isp];	//initial values based on g0
 	tissrate(nsp, pinit, mtiss, mptiss);
 	for (isp = 1; isp <= nsp; isp++) {
-		mptissref[isp] = mptiss[isp];
 		qtsum[isp] = 0.;
 		for (itp = 1; itp <= nnt; itp++) {
 			qt[itp][isp] = mtiss[isp] * vol;
@@ -44,16 +40,16 @@ void initgreens()
 			pv[i][isp] = 0.;
 			if (permsolute[isp] == 1) {
 				if (oxygen[isp] == 1) {
-					qv[i][isp] = -qtsum[isp] * ds[mainseg[i]] * qq[mainseg[i]] * hd[mainseg[i]] / tlengthqhd;//modified 8/10
+					qv[i][isp] = -qtsum[isp] * ds[mainseg[i]] * qq[mainseg[i]] * hd[mainseg[i]] / tlengthqhd;
 					if (lowflow[mainseg[i]] == 1) qv[i][isp] = 0.;  //low q*hd
 				}
-				else qv[i][isp] = -qtsum[isp] * ds[mainseg[i]] * qq[mainseg[i]] / tlengthq;//modified 8/09
+				else qv[i][isp] = -qtsum[isp] * ds[mainseg[i]] * qq[mainseg[i]] / tlengthq;
 				pv[i][isp] = pinit[isp];
 			}
 		}
 	}
-	//set error bounds, proportional to errfac, based on pref separately for each solute, updated April 2015
-	for (isp = 1; isp <= nsp; isp++) pinit[isp] = 0.;
+
+	for (isp = 1; isp <= nsp; isp++) pinit[isp] = 0.;	//set error bounds, proportional to errfac, based on pref for each solute
 	for (isp = 1; isp <= nsp; isp++) {
 		pinit[isp] = pref[isp];
 		tissrate(nsp, pinit, mtiss, mptiss);

@@ -76,11 +76,11 @@ void contr_shade(FILE *ofp, int m, int n, float scalefac, int nl, float xmin,
 	double *xv, *yv, *red, *blue, *green, *dd, *xvv, *yvv, *xspoly, *yspoly, *xrpoly, *yrpoly;
 	double **wsp;
 
-	cx = 50; //origin of contour plot
-	cy = 50;//origin of contour plot
+	cx = 50;	//origin of contour plot
+	cy = 50;	//origin of contour plot
 	cbbox = 15.; //size of boxes
-	cbx = 560; //origin of color bar
-	cby = 100;//origin of color bar
+	cbx = 560;	//origin of color bar
+	cby = 100;	//origin of color bar
 	polytolx = 1.e-6*(xmax - xmin) / (m - 1);
 	polytoly = 1.e-6*(ymax - ymin) / (n - 1);
 
@@ -185,8 +185,7 @@ void contr_shade(FILE *ofp, int m, int n, float scalefac, int nl, float xmin,
 				jseed = j;		//'seed' region nrp
 				nrpoly = 0;		//initialize r-polygon
 				do {
-					//search for a square of type -nrp
-					flags = 1;
+					flags = 1;	//search for a square of type -nrp
 					if (i == iseed && j == jseed && sqtype[i][j] == 0) goto foundit1;
 					for (i = 1; i < m; i++) for (j = 1; j < n; j++) if (sqtype[i][j] == -nrp) goto foundit1;
 					flags = 0;
@@ -421,11 +420,9 @@ void contr_shade(FILE *ofp, int m, int n, float scalefac, int nl, float xmin,
 								}
 							}
 							else sqtype[i][j] = nrp;
-						}
-						while (flaga == 1);
+						} while (flaga == 1);
 					}
-				}
-				while (flags == 1);
+				} while (flags == 1);
 				//display polygons after combining
 				if (hatch > 0) fprintf(ofp, "/clippingpath {\n");
 				fprintf(ofp, "n %g mx %g my m ", xrpoly[1], yrpoly[1]);
@@ -442,8 +439,7 @@ void contr_shade(FILE *ofp, int m, int n, float scalefac, int nl, float xmin,
 				}
 				else fprintf(ofp, "cf\n");
 			}
-		}
-			while (flagr == 1);
+		} while (flagr == 1);
 	}
 	//outline contours
 	if (plotcontour > 0) {

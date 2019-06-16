@@ -42,20 +42,13 @@ gfx mod win 1 view perspective
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <cstdio>
+#include <malloc.h>
 #include <math.h>
 #include <string.h>
 #include "nrutil.h"
 
-// Updated to support Mac OSX, May 2019
-# if defined(__APPLE__)
-	#include <malloc/malloc.h>
-#else
-	#include <malloc.h>
-#endif
-
 void WriteExnodeHeader(FILE *exnode) // Write initial section of .exnode file
 {
-	//    fprintf(exnode, "Region: /vessels\n");
 	fprintf(exnode, "Group name: vessels\n");
 	fprintf(exnode, " #Fields=3\n");
 	fprintf(exnode, " 1) coordinates, coordinate, rectangular cartesian, #Components=3\n");
@@ -72,7 +65,6 @@ void WriteExnodeHeader(FILE *exnode) // Write initial section of .exnode file
 
 void WriteExelemHeader(FILE *exelem)  // Write initial section of .exelem file
 {
-	//   fprintf(exelem, "Region: /vessels\n");
 	fprintf(exelem, "Group name: vessels\n");
 	fprintf(exelem, " Shape.  Dimension=1\n");
 	fprintf(exelem, " #Scale factor sets= 1\n");
@@ -129,23 +121,18 @@ void WriteExelemHeader(FILE *exelem)  // Write initial section of .exelem file
 
 void cmgui(float *segvar)
 {
-	extern int max, mxx, myy, mzz, nseg, nnod;
+	extern int max, mxx, myy, mzz, nseg, nnod, imain;
 	extern int *segtyp, *ista, *iend;
 	extern float *diam, **cnode;
-	extern char numstr[6];
 
 	int iseg, is, in;
 	float red, green, blue, xz, xzmin, xzmax;
 	char fname[80];
 	FILE *exelem, *exnode;
 
-	strcpy(fname, "Current/greens");
-	strcat(fname, numstr);
-	strcat(fname, ".exelem");
+	sprintf(fname, "Current/greens%03i.exelem", imain);
 	exelem = fopen(fname, "w");
-	strcpy(fname, "Current/greens");
-	strcat(fname, numstr);
-	strcat(fname, ".exnode");
+	sprintf(fname, "Current/greens%03i.exnode", imain);
 	exnode = fopen(fname, "w");
 	WriteExelemHeader(exelem);
 	WriteExnodeHeader(exnode);
@@ -156,7 +143,6 @@ void cmgui(float *segvar)
 		xzmin = FMIN(xzmin, segvar[iseg]);
 		xzmax = FMAX(xzmax, segvar[iseg]);
 	}
-
 	is = 0;
 	in = 0;
 	for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4 || segtyp[iseg] == 5) {
@@ -166,13 +152,11 @@ void cmgui(float *segvar)
 		green = FMIN(FMAX(1.5 - 4.*fabs(xz - 0.5), 0.), 1.);
 		red = FMIN(FMAX(1.5 - 4.*fabs(xz - 0.75), 0.), 1.);
 		is++;
-		in++;
-		//  write to elements file
-		fprintf(exelem, "Element: %d 0 0\n", is);
+		in++;		
+		fprintf(exelem, "Element: %d 0 0\n", is);	//  write to elements file
 		fprintf(exelem, "  Nodes: %d %d\n", in, in + 1);
 		fprintf(exelem, "  Scale factors: 1 1\n");
-		//  write to nodes file
-		fprintf(exnode, "Node: %d\n", in);
+		fprintf(exnode, "Node: %d\n", in);			//  write to nodes file
 		fprintf(exnode, "%6.1f %6.1f %6.1f\n", cnode[1][ista[iseg]], cnode[2][ista[iseg]], cnode[3][ista[iseg]]);
 		fprintf(exnode, "%6.2f\n", diam[iseg] / 2.);
 		fprintf(exnode, "%6.2f %6.2f %6.2f\n", red, green, blue);

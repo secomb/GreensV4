@@ -15,15 +15,11 @@ Version 3.0, May 17, 2011.
 void setuparrays0()
 {
 	extern int nsp, mxx, myy, mzz;
-	extern int *errvesselcount, *errtissuecount;
-	extern int *imaxerrvessel, *imaxerrtissue;  //added April 2010
-	extern int ***nbou;
-	extern float *pmin, *pmax, *pmean, *mtiss, *mptiss, *g0old, *ptt, *ptpt, *qtsum, *qvsum, *errvessel;
+	extern int *errvesselcount, *errtissuecount, *imaxerrvessel, *imaxerrtissue, ***nbou;
+	extern float *pmin, *pmax, *mtiss, *mptiss, *g0old, *ptt, *ptpt, *qtsum, *qvsum, *errvessel;
 	extern float *errtissue, *dqvsumdg0, *dqtsumdg0, *pinit, *p, *epsvessel, *epstissue, *eps, *g0, *g0facnew;
-	extern float *qvfac; //May 2010
-	extern float *x, *y, *ss, *axt, *ayt, *azt;
-	extern float ***dtt;
-	extern float *mptissref;//September 2010
+	extern float *qvfac, *x, *y, *ss, *axt, *ayt, *azt, ***dtt;
+	extern float *pmeant, *pmeanv, *psdt, *psdv;
 
 	errvesselcount = ivector(1, nsp);
 	errtissuecount = ivector(1, nsp);
@@ -33,7 +29,10 @@ void setuparrays0()
 
 	pmin = vector(1, nsp);
 	pmax = vector(1, nsp);
-	pmean = vector(1, nsp);
+	pmeant = vector(1, nsp);
+	pmeanv = vector(1, nsp);
+	psdt = vector(1, nsp);
+	psdv = vector(1, nsp);
 	mtiss = vector(1, nsp);
 	mptiss = vector(1, nsp);
 	g0old = vector(1, nsp);
@@ -52,7 +51,6 @@ void setuparrays0()
 	epstissue = vector(1, nsp);
 	eps = vector(1, nsp);
 	qvfac = vector(1, nsp);
-	mptissref = vector(1, nsp);
 
 	x = vector(1, 3);
 	y = vector(1, 3);
