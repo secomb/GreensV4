@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
 		greens();		//run greens
 		//*************************************
 
-		ofp = fopen("Current\\summary.out", "a");
+		ofp = fopen("Current/summary.out", "a");
 		fprintf(ofp, "%4i  %4i  ", imain, kmain);
 		for (j = 1; j <= nvaryparams; j++) fprintf(ofp, "%12f ", paramvalue[imain][j]);
 		for (isp = 1; isp <= nsp; isp++) fprintf(ofp, "%12f ", pmeant[isp]);
@@ -195,7 +195,8 @@ int main(int argc, char *argv[])
 		fprintf(ofp, "\n");
 		fclose(ofp);
 
-		for (iseg = 1; iseg <= nseg; iseg++) segvar[iseg] = pvseg[iseg][1];
+		//for (iseg = 1; iseg <= nseg; iseg++) segvar[iseg] = pvseg[iseg][1];
+		for (iseg = 1; iseg <= nseg; iseg++) segvar[iseg] = gamma1[iseg][1];	//temparary code for KTO2 paper
 		for (inod = 1; inod <= nnod; inod++) nodvar[inod] = nodname[inod];
 
 		sprintf(fname, "Current/NetNodesOxygen%03i.ps", imain);
