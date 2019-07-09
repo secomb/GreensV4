@@ -55,7 +55,7 @@ void input(void)
 
 	int i, j, iseg, isp, nlmax, idum;
 	FILE *ifp;
-	char bb[100];
+	char bb[200];
 
 	ifp = fopen("SoluteParams.dat", "r");
 	fgets(bb, max, ifp);

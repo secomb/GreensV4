@@ -126,7 +126,7 @@ void greens(void)
 	int i, j, k, ix, iy, iz, jx, jy, jz, iseg, nt, ineg, ihigh, isp, imaxerr;
 	int ixdiff, iydiff, izdiff, isn, jseg, ktissue, kvessel, itp, jtp, convflag, convflagt, convflagv;
 	int greensverbose = 1;
-	int bicgstabit = 2000; //parameter for biconjugate gradient method
+	int bicgstabit = 5000; //parameter for biconjugate gradient method
 	double dd,bicgstaberr = 0.0001; //parameter for biconjugate gradient method
 
 	float x11, x22, x33, duration, rsegmax, dsmax, gvarfac;

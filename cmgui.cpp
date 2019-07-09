@@ -42,7 +42,6 @@ gfx mod win 1 view perspective
 #define _CRT_SECURE_NO_DEPRECATE
 
 #include <cstdio>
-#include <malloc.h>
 #include <math.h>
 #include <string.h>
 #include "nrutil.h"

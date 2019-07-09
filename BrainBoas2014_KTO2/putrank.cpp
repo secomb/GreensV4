@@ -3,6 +3,7 @@ putrank - generate list of nodes in order of flow direction
 nodrank --- if nodrank[i] < nodrank[j], node j is not upstream of node i
 Version 2.0, May 1, 2010.
 Version 3.0, May 17, 2011.
+Special version for KTO2 paper - see below
 *************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,4 +81,34 @@ void putrank(void)
 		skipnode:;
 		}
 	}
+	//****************************************************
+	extern float *lseg, *diam, **gamma1; //temporary for KTO2 paper
+	flag = 1;
+	while (flag == 1) {
+		flag = 0;
+		for (iseg = 1; iseg <= nseg; iseg++) if (segtyp[iseg] == 4) {	//temporary code for KTO2 paper
+			if (q[iseg] >= 0) nod1 = ista[iseg];
+			else nod1 = iend[iseg];
+			if (nodtyp[nod1] - nodout[nod1] >= 2) {
+				flag = 1;
+				segtyp[iseg] = 5; 	//vessel fed by converging node
+			}
+			for (j = nodout[nod1] + 1; j <= nodtyp[nod1]; j++) {
+				if(segtyp[nodseg[j][nod1]] == 5) {
+					flag = 1;
+					segtyp[iseg] = 5; 	//vessel fed by upstream converging node
+				}
+
+			}
+		}
+	}
+	float total_length = 0., tlengthdiam = 0.;
+	for (iseg = 1; iseg <= nseg; iseg++) {
+		if (segtyp[iseg] == 5 && diam[iseg] > 8.) gamma1[iseg][1] = 1000.;
+		else {
+			total_length += lseg[iseg];
+			tlengthdiam += lseg[iseg] * diam[iseg];
+		}
+	}
+	float meandiam = tlengthdiam / total_length;
 }

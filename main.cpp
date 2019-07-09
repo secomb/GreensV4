@@ -37,7 +37,7 @@ void setuparrays2(int nnv, int nnt);
 void cmgui(float *segvar);
 void postgreens(void);
 
-int max = 100, nmaxvessel, nmaxtissue, nmax, rungreens, initgreens, g0method, linmethod, is2d;
+int max = 200, nmaxvessel, nmaxtissue, nmax, rungreens, initgreens, g0method, linmethod, is2d;
 int mxx, myy, mzz, nnt, nseg, nnod, nnodfl, nnv, nsp, nnodbc, nodsegm, nsegfl, kmain, imain;
 int slsegdiv, nsl1, nsl2;
 int nvaryparams, nruns, ntissparams, npostgreensparams, npostgreensout;	//needed for varying parameters, postgreens

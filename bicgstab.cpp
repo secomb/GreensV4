@@ -1,5 +1,5 @@
 /************************************************************************
-bicgstab - for Greens07_3D.  TWS April 2010
+bicgstab - for Greens.  TWS April 2010
 Based on algorithm 12, Parameter-free iterative linear solver by R. Weiss, 1996
 system of linear equations:  aa(i,j)*x(j) = b(i)
 *************************************************************************/
