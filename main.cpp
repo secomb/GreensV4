@@ -210,6 +210,5 @@ int main(int argc, char *argv[])
 		sprintf(fname, "Current/Histogram%03i.out", imain);
 		histogram(fname);
 	}
-	fclose(ofp);
 	return 0;
 }
